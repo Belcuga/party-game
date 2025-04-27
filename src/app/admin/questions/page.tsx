@@ -49,7 +49,6 @@ export default function QuestionsPage() {
         return (
             <th
                 className="p-3 border-b cursor-pointer select-none"
-                onClick={() => handleSort(column)}
             >
                 <div className="flex items-center gap-1">
                     {label}
@@ -60,6 +59,7 @@ export default function QuestionsPage() {
                                     ? 'font-bold text-white'
                                     : 'text-gray-400'
                             }
+                            onClick={() => handleSort(column, 'asc')}
                         >
                             ▲
                         </span>
@@ -69,6 +69,7 @@ export default function QuestionsPage() {
                                     ? 'font-bold text-white'
                                     : 'text-gray-400'
                             }
+                            onClick={() => handleSort(column, 'desc')}
                         >
                             ▼
                         </span>
@@ -78,15 +79,9 @@ export default function QuestionsPage() {
         );
     }
 
-    const handleSort = (column: string) => {
-        if (sortColumn === column) {
-            // If already sorting by this column, toggle direction
-            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            // Otherwise, set new sort column and default to ascending
-            setSortColumn(column);
-            setSortDirection('asc');
-        }
+    const handleSort = (column: string, sortDirection: 'asc' | 'desc') => {
+        setSortDirection(sortDirection);
+        setSortColumn(column);
     };
 
     const fetchQuestions = async () => {
@@ -137,7 +132,7 @@ export default function QuestionsPage() {
         <main className="min-h-screen p-6 bg-purple-900 text-white flex flex-col items-center">
             <h1 className="text-3xl font-bold mb-8">All Questions</h1>
 
-            <div className="overflow-y-auto max-h-[600px] w-full">
+            <div className="overflow-y-auto max-h-[600px] w-full overflow-x-auto">
                 <table className="min-w-full table-auto border-collapse">
                     <thead className="sticky top-0 bg-purple-700 z-10">
                         <tr className="bg-purple-700 text-left">
@@ -155,9 +150,13 @@ export default function QuestionsPage() {
                     <tbody>
                         {sortedQuestions.map((q) => (
                             <tr key={q.id} className="hover:bg-purple-800 transition">
-                                <td className="p-3 border-b max-w-xs truncate relative group">
-                                    <span className="block">{q.question}</span>
-                                    <div className="absolute z-10 hidden group-hover:block bg-black text-white text-xs rounded p-2 shadow-lg top-full left-1/2 transform -translate-x-1/2 mt-2 w-64">
+                                <td className="p-3 border-b relative group max-w-[200px]">
+                                    <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {q.question}
+                                    </div>
+
+                                    {/* Tooltip on hover */}
+                                    <div className="absolute hidden group-hover:block z-20 bg-black text-white text-xs rounded p-2 shadow-lg top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 break-words">
                                         {q.question}
                                     </div>
                                 </td>
