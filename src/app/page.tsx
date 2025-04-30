@@ -122,7 +122,6 @@ export default function Home() {
     }
 
     const allQuestions = Array.from(questionMap.values());
-    console.log(gameSettings);
     let filteredQuestions = allQuestions.filter((q: Question) => {
       if(gameSettings.dirtyMode){
         if(q.dirty) return true;
@@ -150,7 +149,6 @@ export default function Home() {
     // }
 
     const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))];
-    console.log(existingDifficulties);
 
     const initializedPlayers = players.map((p) => ({
       id: String(p.id),
@@ -240,7 +238,7 @@ export default function Home() {
 
             <section className="mb-8">
               <h2 className="text-xl font-semibold mb-2">Players</h2>
-              <ul className="space-y-1 mb-4 max-h-[400px] overflow-y-auto">
+              <ul className="space-y-1 mb-4 max-h-[280px] overflow-y-auto">
                 {players.map((player, i) => (
                   <li key={i} className="flex items-center justify-between gap-2">
                     <span>{player.name}</span>

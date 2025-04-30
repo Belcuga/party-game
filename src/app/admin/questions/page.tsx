@@ -151,13 +151,13 @@ export default function QuestionsPage() {
     }
 
     return (
-        <main className="min-h-screen p-6 bg-purple-900 text-white flex flex-col items-center">
+        <main className="min-h-screen p-6 bg-gradient-to-br from-blue-950 to-blue-900 text-white flex flex-col items-center">
             <h1 className="text-3xl font-bold mb-8">All Questions</h1>
 
             <div className="overflow-y-auto max-h-[600px] w-full overflow-x-auto">
                 <table className="min-w-full table-auto border-collapse">
-                    <thead className="sticky top-0 bg-purple-700 z-10">
-                        <tr className="bg-purple-700 text-left">
+                    <thead className="sticky top-0 bg-blue-700 z-10">
+                        <tr className="bg-blue-700 text-left">
                             <SortableHeader label="Question" column="question" />
                             <SortableHeader label="Dirty" column="dirty" />
                             <SortableHeader label="Challenge" column="challenge" />

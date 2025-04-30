@@ -256,9 +256,9 @@ export default function PlayPage() {
     return [...array].sort(() => Math.random() - 0.5);
   }
 
-  function handleSkip() {
-    console.log('Skip logic here...');
-  }
+  // function handleSkip() {
+  //   console.log('Skip logic here...');
+  // }
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
@@ -299,9 +299,9 @@ export default function PlayPage() {
               <ArrowLeft />
               <span>Back</span>
             </button>
-            <button className="hover:text-gray-300">
+            {/* <button className="hover:text-gray-300">
               <Settings />
-            </button>
+            </button> */}
           </div>
 
           {/* Center Content */}
@@ -315,42 +315,47 @@ export default function PlayPage() {
             </div>
 
             {/* Like / Dislike Buttons */}
-            <div className="flex items-center gap-8 mt-6">
-              <button
-                onClick={() => handleVote('dislike')}
-                disabled={votedType !== null}
-                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'} ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <ThumbsDown />
-              </button>
+            <div className="relative w-full h-36 mt-auto">
+              <div className="absolute inset-x-0 bottom-24 flex justify-center gap-10">
+                <button
+                  onClick={() => handleVote('dislike')}
+                  disabled={votedType !== null}
+                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
+                    } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <ThumbsDown />
+                </button>
 
-              <button
-                onClick={() => handleVote('like')}
-                disabled={votedType !== null}
-                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'} ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <ThumbsUp />
-              </button>
+                <button
+                  onClick={() => handleVote('like')}
+                  disabled={votedType !== null}
+                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
+                    } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <ThumbsUp />
+                </button>
+              </div>
+              <div className="absolute inset-x-0 bottom-6 flex justify-center">
+                <button
+                  onClick={handleNext}
+                  className="w-60 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-lg shadow-lg"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Bottom Buttons */}
-          <div className="flex justify-between items-center mt-8">
+        {/* <div className="flex justify-between items-center mt-8">
             <button
               onClick={handleSkip}
               className="px-4 py-2 rounded border border-white hover:bg-white hover:text-purple-900"
             >
               Skip
             </button>
-
-            <button
-              onClick={handleNext}
-              className="px-6 py-3 rounded bg-blue-600 hover:bg-blue-700 font-bold"
-            >
-              Next
-            </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
