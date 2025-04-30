@@ -79,25 +79,48 @@ export default function Home() {
 
   const startGame = async () => {
     if (players.length < 2) return;
-
+  
     setLoadingQuestions(true);
     const id = uuid();
-
-    const { data, error } = await supabase.from('questions').select('*');
-
-    if (error || !data) {
-      console.error('Failed to fetch questions:', error?.message);
-      setLoadingQuestions(false);
-      return;
+  
+    const pageSize = 1000;
+    let from = 0;
+    let moreData = true;
+    const questionMap = new Map();
+  
+    while (moreData) {
+      const to = from + pageSize - 1;
+  
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .range(from, to)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false });
+  
+      if (error) {
+        console.error('Failed to fetch questions:', error.message);
+        setLoadingQuestions(false);
+        return;
+      }
+  
+      if (data && data.length > 0) {
+        data.forEach((q) => questionMap.set(q.id, q));
+        from += pageSize;
+      } else {
+        moreData = false;
+      }
     }
-
-    let filteredQuestions = data.filter((q: Question) => {
+  
+    const allQuestions = Array.from(questionMap.values());
+  
+    let filteredQuestions = allQuestions.filter((q: Question) => {
       if (!gameSettings.adultMode && q.dirty) return false;
       if (!gameSettings.challenges && q.challenge) return false;
       return true;
     });
-
-    // Check if we can allow ${player} questions
+  
+    // Optional gender-based filtering
     // const hasOppositeGenderSingles = players.some((p1) =>
     //   players.some(
     //     (p2) =>
@@ -106,23 +129,22 @@ export default function Home() {
     //       p2.gender !== 'none'
     //   )
     // );
-
+    //
     // if (!hasOppositeGenderSingles) {
     //   filteredQuestions = filteredQuestions.filter((q) => !q.question.includes('${player}'));
     // }
-
-    // Initialize Game Players
+  
     const initializedPlayers = players.map((p) => ({
       id: String(p.id),
       name: p.name,
       gender: p.gender,
       drink: p.drink,
       skipCount: 1,
-      difficultyQueue: shuffleArray([1, 2, 3, 4, 5]),
+      difficultyQueue: shuffleArray([1, 2, 3, 4]),
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
     }));
-
+  
     initializedPlayers.push({
       id: String(0),
       name: 'All players',
@@ -132,9 +154,8 @@ export default function Home() {
       difficultyQueue: [],
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
-    })
-
-    // Initialize Game State
+    });
+  
     const gameState: GameState = {
       players: initializedPlayers,
       questions: filteredQuestions,
@@ -145,7 +166,7 @@ export default function Home() {
       roundNumber: 1,
       bonusReady: false,
     };
-
+  
     setLoadingQuestions(false);
     setGameState(gameState);
     router.push(`/game/${id}`);

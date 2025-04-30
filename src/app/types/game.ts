@@ -6,7 +6,7 @@ export type GamePlayer = {
     gender: Gender;
     skipCount: number;
     drink: Drink;
-    difficultyQueue: number[];   // 5 difficulties shuffled
+    difficultyQueue: number[];   // 4 difficulties shuffled
     difficultyIndex: number;     // where in difficultyQueue they currently are
     totalQuestionsAnswered: number; // counts questions for bonus round + skip bonus
 };

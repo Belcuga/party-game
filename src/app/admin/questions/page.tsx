@@ -85,17 +85,39 @@ export default function QuestionsPage() {
     };
 
     const fetchQuestions = async () => {
-        setLoading(true); // (Optional) show spinner while reloading
-        const { data, error } = await supabase
-            .from('questions')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching questions:', error.message);
-        } else {
-            setQuestions(data as Question[]);
+        setLoading(true);
+    
+        const pageSize = 999;
+        let from = 0;
+        let moreData = true;
+        const uniqueQuestionsMap = new Map(); // <-- Declare it here
+    
+        while (moreData) {
+            const to = from + pageSize - 1;
+    
+            const { data, error } = await supabase
+                .from('questions')
+                .select('*')
+                .range(from, to)
+                .order('created_at', { ascending: false }) // Optional tie-breaker
+                .order('id', { ascending: false });
+    
+            if (error) {
+                console.error('Error fetching questions:', error.message);
+                break;
+            }
+    
+            if (data && data.length > 0) {
+                // Add each question by ID (deduplicates)
+                data.forEach((q) => uniqueQuestionsMap.set(q.id, q));
+                from += pageSize;
+            } else {
+                moreData = false;
+            }
         }
+    
+        const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+        setQuestions(uniqueQuestions);
         setLoading(false);
     };
 

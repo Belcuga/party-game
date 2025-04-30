@@ -80,9 +80,8 @@ export default function PlayPage() {
     return available[randomIndex];
   }
 
-  function pickNextQuestion(playerId: string, state: GameState): GameQuestion { console.log('1234');
+  function pickNextQuestion(playerId: string, state: GameState): GameQuestion {
     const player = state.players.find(p => p.id === playerId);
-    console.log(player);
     if (!player){
       const availableQuestions = state.questions.filter(
         q => !state.answeredQuestionIds.includes(q.id) && q.all_players
@@ -105,7 +104,6 @@ export default function PlayPage() {
       const availableQuestions = state.questions.filter(
         q => (!desiredDifficultyRequired || (q.difficulty === desiredDifficulty)) && !state.answeredQuestionIds.includes(q.id) && q.all_players === allPlayersQuestion
       );
-  
       if (availableQuestions.length === 0) {
         throw new Error('No questions available for this difficulty');
       }
@@ -116,24 +114,40 @@ export default function PlayPage() {
   }
 
   function replacePlayerPlaceholder(question: string, state: GameState, currentPlayerId: string): string {
-    if (!question.includes('${player}')) return question;
-
+    const PLACEHOLDER = '${player}';
+  
+    if (!question.includes(PLACEHOLDER)) return question;
+  
     const currentPlayer = state.players.find(p => p.id === currentPlayerId);
     if (!currentPlayer) return question;
-
+  
+    // Filter eligible other players
     const otherPlayers = state.players.filter(
-      p => p.id !== currentPlayerId && p.gender !== currentPlayer.gender
+      p => p.id !== currentPlayerId &&
+           p.gender !== currentPlayer.gender &&
+           p.id !== '0'
     );
-
+  
     if (otherPlayers.length === 0) return question;
-
-    const randomOther = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
-    return question.replace('${player}', randomOther.name);
+  
+    // Count how many placeholders are in the string
+    const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
+  
+    // Shuffle and pick unique players for each placeholder
+    const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
+    const pickedPlayers = shuffled.slice(0, placeholderCount);
+  
+    let replaced = question;
+    for (let i = 0; i < placeholderCount; i++) {
+      const name = pickedPlayers[i % pickedPlayers.length].name;
+      replaced = replaced.replace(PLACEHOLDER, name);
+    }
+  
+    return replaced;
   }
 
   function handleNext() {
     if (!gameState) return;
-    console.log(gameState);
     const updatedAnsweredIds = [...gameState.answeredQuestionIds, gameState.currentQuestion?.id ?? 0];
     let updatedRoundPlayersLeft = gameState.roundPlayersLeft.filter(id => id !== gameState.currentPlayerId);
     let updatedRoundNumber = gameState.roundNumber;
@@ -146,8 +160,8 @@ export default function PlayPage() {
       if (!player) return;
   
       let updatedDifficultyIndex = player.difficultyIndex + 1;
-      if (updatedDifficultyIndex >= 5) {
-        player.difficultyQueue = shuffleArray([1, 2, 3, 4, 5]);
+      if (updatedDifficultyIndex >= 4) {
+        player.difficultyQueue = shuffleArray([1, 2, 3, 4]);
         updatedDifficultyIndex = 0;
       }
       player.difficultyIndex = updatedDifficultyIndex;
@@ -184,8 +198,8 @@ export default function PlayPage() {
     if (!player) return;
   
     let updatedDifficultyIndex = player.difficultyIndex + 1;
-    if (updatedDifficultyIndex >= 5) {
-      player.difficultyQueue = shuffleArray([1, 2, 3, 4, 5]);
+    if (updatedDifficultyIndex >= 4) {
+      player.difficultyQueue = shuffleArray([1, 2, 3, 4]);
       updatedDifficultyIndex = 0;
     }
     player.difficultyIndex = updatedDifficultyIndex;
@@ -208,7 +222,6 @@ export default function PlayPage() {
   }
 
   function showNumberOfSips() {
-    console.log(gameState)
     if(gameState?.currentQuestion?.all_players){
       return `Beer drinkers take ${gameState?.currentQuestion?.punishment * 2} sips \n
       Wine drinkers take ${gameState.currentQuestion?.punishment * 1} sips \n
@@ -231,7 +244,7 @@ export default function PlayPage() {
   }
 
   return (
- <div className="relative min-h-screen bg-purple-900 text-white flex justify-center">
+ <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
       {/* LEFT Ad Banner */}
       <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
         <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
