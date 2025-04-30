@@ -35,6 +35,7 @@ export type GameState = {
   currentPlayerId: string | null;
   currentQuestion: GameQuestion | null;
   roundNumber: number;
+  existingDifficulties: number[];
 };
 
 type GameContextType = {

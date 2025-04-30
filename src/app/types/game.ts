@@ -20,4 +20,5 @@ export type GameState = {
     currentQuestion: Question | null;
     roundNumber: number;
     bonusReady: boolean;                // Ready for bonus round (all_players = true)
+    existingDifficulties: number[];
 };

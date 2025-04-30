@@ -82,22 +82,22 @@ export default function PlayPage() {
 
   function pickNextQuestion(playerId: string, state: GameState): GameQuestion {
     const player = state.players.find(p => p.id === playerId);
-    if (!player){
+    if (!player) {
       const availableQuestions = state.questions.filter(
         q => !state.answeredQuestionIds.includes(q.id) && q.all_players
       );
-  
+
       if (availableQuestions.length === 0) {
         throw new Error('No questions available for this difficulty');
       }
-  
+
       return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     }
-    else{
+    else {
       let desiredDifficulty = player.difficultyQueue[player.difficultyIndex];
       let allPlayersQuestion = false;
       let desiredDifficultyRequired = true;
-      if(player.id === '0'){
+      if (player.id === '0') {
         allPlayersQuestion = true;
         desiredDifficultyRequired = false;
       }
@@ -107,7 +107,7 @@ export default function PlayPage() {
       if (availableQuestions.length === 0) {
         throw new Error('No questions available for this difficulty');
       }
-  
+
       return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     }
 
@@ -115,34 +115,34 @@ export default function PlayPage() {
 
   function replacePlayerPlaceholder(question: string, state: GameState, currentPlayerId: string): string {
     const PLACEHOLDER = '${player}';
-  
+
     if (!question.includes(PLACEHOLDER)) return question;
-  
+
     const currentPlayer = state.players.find(p => p.id === currentPlayerId);
     if (!currentPlayer) return question;
-  
+
     // Filter eligible other players
     const otherPlayers = state.players.filter(
       p => p.id !== currentPlayerId &&
-           p.gender !== currentPlayer.gender &&
-           p.id !== '0'
+        p.gender !== currentPlayer.gender &&
+        p.id !== '0'
     );
-  
+
     if (otherPlayers.length === 0) return question;
-  
+
     // Count how many placeholders are in the string
     const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
-  
+
     // Shuffle and pick unique players for each placeholder
     const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
     const pickedPlayers = shuffled.slice(0, placeholderCount);
-  
+
     let replaced = question;
     for (let i = 0; i < placeholderCount; i++) {
       const name = pickedPlayers[i % pickedPlayers.length].name;
       replaced = replaced.replace(PLACEHOLDER, name);
     }
-  
+
     return replaced;
   }
 
@@ -151,26 +151,26 @@ export default function PlayPage() {
     const updatedAnsweredIds = [...gameState.answeredQuestionIds, gameState.currentQuestion?.id ?? 0];
     let updatedRoundPlayersLeft = gameState.roundPlayersLeft.filter(id => id !== gameState.currentPlayerId);
     let updatedRoundNumber = gameState.roundNumber;
-  
+
     // First: If still normal players left
     if (updatedRoundPlayersLeft.length > 0) {
       const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: updatedRoundPlayersLeft });
-  
+
       const player = gameState.players.find(p => p.id === nextPlayerId);
       if (!player) return;
-  
+
       let updatedDifficultyIndex = player.difficultyIndex + 1;
-      if (updatedDifficultyIndex >= 4) {
-        player.difficultyQueue = shuffleArray([1, 2, 3, 4]);
+      if (updatedDifficultyIndex >= gameState.existingDifficulties.length) {
+        player.difficultyQueue = shuffleArray(gameState.existingDifficulties);
         updatedDifficultyIndex = 0;
       }
       player.difficultyIndex = updatedDifficultyIndex;
-  
+
       const nextQuestion = pickNextQuestion(nextPlayerId, {
         ...gameState,
         answeredQuestionIds: updatedAnsweredIds,
       });
-  
+
       setGameState({
         ...gameState,
         answeredQuestionIds: updatedAnsweredIds,
@@ -178,37 +178,37 @@ export default function PlayPage() {
         currentPlayerId: nextPlayerId,
         currentQuestion: nextQuestion,
       });
-  
+
       setVotedType(null);
       return;
     }
-  
+
     // If players finished and bonus was done -> start new round
     const newRoundPlayers = gameState.players.map(p => p.id);
     updatedRoundNumber += 1;
-  
+
     // Give extra skip every 10 rounds
     if (updatedRoundNumber % 10 === 1 && updatedRoundNumber !== 1) {
       gameState.players.forEach(player => player.skipCount++);
     }
-  
+
     const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: newRoundPlayers });
-  
+
     const player = gameState.players.find(p => p.id === nextPlayerId);
     if (!player) return;
-  
+
     let updatedDifficultyIndex = player.difficultyIndex + 1;
-    if (updatedDifficultyIndex >= 4) {
-      player.difficultyQueue = shuffleArray([1, 2, 3, 4]);
+    if (updatedDifficultyIndex >= gameState.existingDifficulties.length) {
+      player.difficultyQueue = shuffleArray(gameState.existingDifficulties);
       updatedDifficultyIndex = 0;
     }
     player.difficultyIndex = updatedDifficultyIndex;
-  
+
     const nextQuestion = pickNextQuestion(nextPlayerId, {
       ...gameState,
       answeredQuestionIds: updatedAnsweredIds,
     });
-  
+
     setGameState({
       ...gameState,
       answeredQuestionIds: updatedAnsweredIds,
@@ -217,22 +217,39 @@ export default function PlayPage() {
       currentPlayerId: nextPlayerId,
       currentQuestion: nextQuestion,
     });
-  
+
     setVotedType(null);
   }
 
   function showNumberOfSips() {
-    if(gameState?.currentQuestion?.all_players){
-      return `Beer drinkers take ${gameState?.currentQuestion?.punishment * 2} sips \n
-      Wine drinkers take ${gameState.currentQuestion?.punishment * 1} sips \n
-      Strong drink drinkers take ${Math.ceil(gameState.currentQuestion?.punishment * 0.5)} sips
-      `;
+    if (gameState?.currentQuestion?.all_players) {
+      const punishment = gameState.currentQuestion.punishment ?? 0;
+
+      const sips = [
+        `Beer drinkers take ${punishment * 2} sips`,
+        `Wine drinkers take ${punishment * 1} sips`,
+        `Strong drink drinkers take ${Math.ceil(punishment * 0.5)} sips`,
+      ];
+
+      return sips.map((line, idx) => (
+        <p key={idx} className="leading-tight text-left font-semibold">
+          {line}
+        </p>
+      ));
+    } else {
+      const multiplier =
+        currentPlayer?.drink === Drink.Beer
+          ? 2
+          : currentPlayer?.drink === Drink.Wine
+            ? 1
+            : 0.5;
+      const sips = Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier);
+      return (
+        <p className="leading-tight text-left font-semibold">
+          take {sips} sips
+        </p>
+      );
     }
-    else{
-      const multiplier = currentPlayer?.drink === Drink.Beer ? 2 : currentPlayer?.drink === Drink.Wine ? 1 : 0.5;
-      return `take ${Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier)} sips`
-    }
-    
   }
 
   function shuffleArray<T>(array: T[]): T[] {
@@ -244,7 +261,7 @@ export default function PlayPage() {
   }
 
   return (
- <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
       {/* LEFT Ad Banner */}
       <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
         <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
@@ -290,11 +307,11 @@ export default function PlayPage() {
           {/* Center Content */}
           <div className="flex flex-col items-center text-center gap-6 flex-grow">
             <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
-            <h2 className="text-xl mb-4">{currentPlayer?.name}'s Turn</h2>
+            <h2 className="text-xl mb-4">{`${currentPlayer?.id === '0' ? currentPlayer?.name + '\'' : currentPlayer?.name + '\'s'}`} Turn</h2>
 
             <div className="bg-white text-black p-6 rounded shadow-lg max-w-lg w-full mb-6">
-              <p className="text-lg mb-4">{questionText}</p>
-              <p className="font-semibold whitespace-pre-line">{showNumberOfSips()}</p>
+              <p className="text-lg mb-4 text-left">{questionText}</p>
+              <div className="space-y-1">{showNumberOfSips()}</div>
             </div>
 
             {/* Like / Dislike Buttons */}

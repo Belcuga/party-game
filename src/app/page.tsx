@@ -10,6 +10,7 @@ import { supabase } from './lib/SupabaseClient';
 import { GameState } from './types/game';
 import { useGame } from './providers/GameContext';
 import { TrashIcon } from 'lucide-react';
+import { SettingsLabel } from './types/gameSettings';
 
 export default function Home() {
   const router = useRouter();
@@ -65,45 +66,53 @@ export default function Home() {
     },
 
   ]);
+
+  const settings: SettingsLabel[] = [
+    { label: 'Dirty (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
+    { label: 'Challenges', tooltip: 'Include physical or action-based challenges', value: 'challenges' },
+    { label: 'Dirty mode only (18+)', tooltip: 'Dirty questions and challenges only', value: 'dirtyMode' },
+  ];
+
   const [modalOpen, setModalOpen] = useState(false);
   const [gameSettings, setGameSettings] = useState({
     adultMode: false,
     challenges: false,
+    dirtyMode: false
   });
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const { setGameState } = useGame();
 
-  const toggleSetting = (key: 'adultMode' | 'challenges') => {
+  const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
     setGameSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const startGame = async () => {
     if (players.length < 2) return;
-  
+
     setLoadingQuestions(true);
     const id = uuid();
-  
+
     const pageSize = 1000;
     let from = 0;
     let moreData = true;
     const questionMap = new Map();
-  
+
     while (moreData) {
       const to = from + pageSize - 1;
-  
+
       const { data, error } = await supabase
         .from('questions')
         .select('*')
         .range(from, to)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false });
-  
+
       if (error) {
         console.error('Failed to fetch questions:', error.message);
         setLoadingQuestions(false);
         return;
       }
-  
+
       if (data && data.length > 0) {
         data.forEach((q) => questionMap.set(q.id, q));
         from += pageSize;
@@ -111,15 +120,21 @@ export default function Home() {
         moreData = false;
       }
     }
-  
+
     const allQuestions = Array.from(questionMap.values());
-  
+    console.log(gameSettings);
     let filteredQuestions = allQuestions.filter((q: Question) => {
-      if (!gameSettings.adultMode && q.dirty) return false;
-      if (!gameSettings.challenges && q.challenge) return false;
-      return true;
+      if(gameSettings.dirtyMode){
+        if(q.dirty) return true;
+        return false;
+      }
+      else{
+        if (!gameSettings.adultMode && q.dirty && !gameSettings.dirtyMode) return false;
+        if (!gameSettings.challenges && q.challenge && !gameSettings.dirtyMode) return false;
+        return true;
+      }
     });
-  
+
     // Optional gender-based filtering
     // const hasOppositeGenderSingles = players.some((p1) =>
     //   players.some(
@@ -133,18 +148,21 @@ export default function Home() {
     // if (!hasOppositeGenderSingles) {
     //   filteredQuestions = filteredQuestions.filter((q) => !q.question.includes('${player}'));
     // }
-  
+
+    const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))];
+    console.log(existingDifficulties);
+
     const initializedPlayers = players.map((p) => ({
       id: String(p.id),
       name: p.name,
       gender: p.gender,
       drink: p.drink,
       skipCount: 1,
-      difficultyQueue: shuffleArray([1, 2, 3, 4]),
+      difficultyQueue: shuffleArray(existingDifficulties),
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
     }));
-  
+
     initializedPlayers.push({
       id: String(0),
       name: 'All players',
@@ -155,7 +173,7 @@ export default function Home() {
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
     });
-  
+
     const gameState: GameState = {
       players: initializedPlayers,
       questions: filteredQuestions,
@@ -165,8 +183,9 @@ export default function Home() {
       currentQuestion: null,
       roundNumber: 1,
       bonusReady: false,
+      existingDifficulties: existingDifficulties
     };
-  
+
     setLoadingQuestions(false);
     setGameState(gameState);
     router.push(`/game/${id}`);
@@ -243,28 +262,27 @@ export default function Home() {
             </section>
 
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-2 text-white">
-                  <input type="checkbox" 
-                  className="form-checkbox" 
-                  checked={gameSettings.adultMode}
-                  onChange={() => toggleSetting('adultMode')}
-                  />
-                  <span>Adult Mode</span>
-                </label>
-                <label className="flex items-center space-x-2 text-white">
-                  <input type="checkbox" 
-                  className="form-checkbox" 
-                  checked={gameSettings.challenges}
-                  onChange={() => toggleSetting('challenges')}
-                  />
-                  <span>Challenges</span>
-                </label>
+              <div className="flex flex-col gap-3">
+                {settings.map((item, index) => (
+                  <div key={index} className="relative group">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox"
+                        className="form-checkbox h-5 w-5 text-blue-600"
+                        checked={gameSettings[item.value]}
+                        onChange={() => toggleSetting(item.value)}
+                      />
+                      {item.label}
+                    </label>
+                    <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      {item.tooltip}
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <button  
-               onClick={startGame}
-              className={`px-6 py-3 rounded font-bold w-full ${players.length < 2 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
+              <button
+                onClick={startGame}
+                className={`px-6 py-3 rounded font-bold w-full ${players.length < 2 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}>
                 Start Game
               </button>
