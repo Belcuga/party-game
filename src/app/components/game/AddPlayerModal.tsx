@@ -1,6 +1,7 @@
 'use client';
 
 import { Drink, Gender, Player } from '@/app/types/player';
+import { v4 as uuid } from 'uuid';
 import { useState } from 'react';
 
 type Props = {
@@ -17,7 +18,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
 
     const handleSubmit = () => {
         if (name.trim()) {
-            onAdd({ id: 0, name: name.trim(), gender, drink, single, skipCount: 1 });
+            onAdd({ id: uuid(), name: name.trim(), gender, drink, single, skipCount: 1 });
             setName('');
             setGender(Gender.None);
             onClose();

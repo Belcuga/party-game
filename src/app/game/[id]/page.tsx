@@ -1,75 +1,327 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Settings, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useGame, GameState, GameQuestion } from '@/app/providers/GameContext';
+import { supabase } from '@/app/lib/SupabaseClient';
+import { GamePlayer } from '@/app/types/game';
+import { Drink } from '@/app/types/player';
 
 export default function PlayPage() {
-  const { id } = useParams();
   const router = useRouter();
+  const { gameState, setGameState } = useGame();
+  const [localLoading, setLocalLoading] = useState(true);
+  const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
 
-  const [playerName, setPlayerName] = useState('Player 1');
-  const [question, setQuestion] = useState('What is your greatest fear?');
+  useEffect(() => {
+    if (!gameState) return;
 
-  const handleNext = () => {
-    console.log('Next question!');
-    // TODO: Load next question logic
-  };
+    if (!gameState.currentPlayerId) {
+      const nextPlayerId = pickNextPlayer(gameState);
+      const nextQuestion = pickNextQuestion(nextPlayerId, gameState);
 
-  const handleSkip = () => {
-    console.log('Skipped!');
-    // TODO: Handle skip logic
-  };
+      setGameState({
+        ...gameState,
+        currentPlayerId: nextPlayerId,
+        currentQuestion: nextQuestion,
+      });
+    }
+
+    setLocalLoading(false);
+  }, [gameState]);
+
+  if (!gameState || localLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const currentPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+  const questionText = replacePlayerPlaceholder(
+    gameState.currentQuestion?.question || '',
+    gameState,
+    currentPlayer?.id || ''
+  );
+
+  async function handleVote(type: 'like' | 'dislike') {
+    if (!gameState || !gameState.currentQuestion) return;
+
+    const questionId = gameState.currentQuestion.id;
+    const column = type === 'like' ? 'like_count' : 'dislike_count';
+
+    const { data, error } = await supabase
+      .from('questions')
+      .select(column)
+      .eq('id', questionId)
+      .single();
+
+    if (error || !data) {
+      console.error('Failed to fetch current vote count:', error?.message);
+      return;
+    }
+
+    const currentCount = (data as any)[column] ?? 0;
+
+    const { error: updateError } = await supabase
+      .from('questions')
+      .update({ [column]: currentCount + 1 })
+      .eq('id', questionId);
+
+    if (updateError) {
+      console.error('Failed to update vote count:', updateError.message);
+      return;
+    }
+
+    setVotedType(type);
+  }
+
+  function pickNextPlayer(state: GameState): string {
+    const available = state.roundPlayersLeft;
+    const randomIndex = Math.floor(Math.random() * available.length);
+    return available[randomIndex];
+  }
+
+  function pickNextQuestion(playerId: string, state: GameState): GameQuestion { console.log('1234');
+    const player = state.players.find(p => p.id === playerId);
+    console.log(player);
+    if (!player){
+      const availableQuestions = state.questions.filter(
+        q => !state.answeredQuestionIds.includes(q.id) && q.all_players
+      );
+  
+      if (availableQuestions.length === 0) {
+        throw new Error('No questions available for this difficulty');
+      }
+  
+      return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    }
+    else{
+      let desiredDifficulty = player.difficultyQueue[player.difficultyIndex];
+      let allPlayersQuestion = false;
+      let desiredDifficultyRequired = true;
+      if(player.id === '0'){
+        allPlayersQuestion = true;
+        desiredDifficultyRequired = false;
+      }
+      const availableQuestions = state.questions.filter(
+        q => (!desiredDifficultyRequired || (q.difficulty === desiredDifficulty)) && !state.answeredQuestionIds.includes(q.id) && q.all_players === allPlayersQuestion
+      );
+  
+      if (availableQuestions.length === 0) {
+        throw new Error('No questions available for this difficulty');
+      }
+  
+      return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    }
+
+  }
+
+  function replacePlayerPlaceholder(question: string, state: GameState, currentPlayerId: string): string {
+    if (!question.includes('${player}')) return question;
+
+    const currentPlayer = state.players.find(p => p.id === currentPlayerId);
+    if (!currentPlayer) return question;
+
+    const otherPlayers = state.players.filter(
+      p => p.id !== currentPlayerId && p.gender !== currentPlayer.gender
+    );
+
+    if (otherPlayers.length === 0) return question;
+
+    const randomOther = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+    return question.replace('${player}', randomOther.name);
+  }
+
+  function handleNext() {
+    if (!gameState) return;
+    console.log(gameState);
+    const updatedAnsweredIds = [...gameState.answeredQuestionIds, gameState.currentQuestion?.id ?? 0];
+    let updatedRoundPlayersLeft = gameState.roundPlayersLeft.filter(id => id !== gameState.currentPlayerId);
+    let updatedRoundNumber = gameState.roundNumber;
+  
+    // First: If still normal players left
+    if (updatedRoundPlayersLeft.length > 0) {
+      const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: updatedRoundPlayersLeft });
+  
+      const player = gameState.players.find(p => p.id === nextPlayerId);
+      if (!player) return;
+  
+      let updatedDifficultyIndex = player.difficultyIndex + 1;
+      if (updatedDifficultyIndex >= 5) {
+        player.difficultyQueue = shuffleArray([1, 2, 3, 4, 5]);
+        updatedDifficultyIndex = 0;
+      }
+      player.difficultyIndex = updatedDifficultyIndex;
+  
+      const nextQuestion = pickNextQuestion(nextPlayerId, {
+        ...gameState,
+        answeredQuestionIds: updatedAnsweredIds,
+      });
+  
+      setGameState({
+        ...gameState,
+        answeredQuestionIds: updatedAnsweredIds,
+        roundPlayersLeft: updatedRoundPlayersLeft,
+        currentPlayerId: nextPlayerId,
+        currentQuestion: nextQuestion,
+      });
+  
+      setVotedType(null);
+      return;
+    }
+  
+    // If players finished and bonus was done -> start new round
+    const newRoundPlayers = gameState.players.map(p => p.id);
+    updatedRoundNumber += 1;
+  
+    // Give extra skip every 10 rounds
+    if (updatedRoundNumber % 10 === 1 && updatedRoundNumber !== 1) {
+      gameState.players.forEach(player => player.skipCount++);
+    }
+  
+    const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: newRoundPlayers });
+  
+    const player = gameState.players.find(p => p.id === nextPlayerId);
+    if (!player) return;
+  
+    let updatedDifficultyIndex = player.difficultyIndex + 1;
+    if (updatedDifficultyIndex >= 5) {
+      player.difficultyQueue = shuffleArray([1, 2, 3, 4, 5]);
+      updatedDifficultyIndex = 0;
+    }
+    player.difficultyIndex = updatedDifficultyIndex;
+  
+    const nextQuestion = pickNextQuestion(nextPlayerId, {
+      ...gameState,
+      answeredQuestionIds: updatedAnsweredIds,
+    });
+  
+    setGameState({
+      ...gameState,
+      answeredQuestionIds: updatedAnsweredIds,
+      roundPlayersLeft: newRoundPlayers,
+      roundNumber: updatedRoundNumber,
+      currentPlayerId: nextPlayerId,
+      currentQuestion: nextQuestion,
+    });
+  
+    setVotedType(null);
+  }
+
+  function showNumberOfSips() {
+    console.log(gameState)
+    if(gameState?.currentQuestion?.all_players){
+      return `Beer drinkers take ${gameState?.currentQuestion?.punishment * 2} sips \n
+      Wine drinkers take ${gameState.currentQuestion?.punishment * 1} sips \n
+      Strong drink drinkers take ${Math.ceil(gameState.currentQuestion?.punishment * 0.5)} sips
+      `;
+    }
+    else{
+      const multiplier = currentPlayer?.drink === Drink.Beer ? 2 : currentPlayer?.drink === Drink.Wine ? 1 : 0.5;
+      return `take ${Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier)} sips`
+    }
+    
+  }
+
+  function shuffleArray<T>(array: T[]): T[] {
+    return [...array].sort(() => Math.random() - 0.5);
+  }
+
+  function handleSkip() {
+    console.log('Skip logic here...');
+  }
 
   return (
-    <main className="min-h-screen bg-purple-900 text-white flex justify-center items-center p-4">
-      <div className="w-full max-w-3xl bg-purple-800 p-6 rounded-xl shadow-lg flex flex-col justify-between min-h-[80vh]">
-        {/* Top bar */}
-        <div className="flex justify-between items-center mb-8">
-          <button onClick={() => router.back()} className="flex items-center gap-2 hover:text-gray-300">
-            <ArrowLeft />
-            <span>Back</span>
-          </button>
-          <button className="hover:text-gray-300">
-            <Settings />
-          </button>
-        </div>
-
-        {/* Center content */}
-        <div className="flex flex-col items-center text-center gap-6 flex-grow">
-          <h1 className="text-2xl font-bold">{playerName}</h1>
-          <div className="bg-white text-purple-900 p-6 rounded-lg w-full max-w-md shadow-md">
-            <p className="text-lg">{question}</p>
-          </div>
-
-          {/* Like / Dislike */}
-          <div className="flex items-center gap-8 mt-6">
-            <button className="w-12 h-12 rounded-full bg-gray-700 flex justify-center items-center hover:bg-gray-600">
-              <ThumbsDown />
-            </button>
-            <button className="w-12 h-12 rounded-full bg-gray-700 flex justify-center items-center hover:bg-gray-600">
-              <ThumbsUp />
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom buttons */}
-        <div className="flex justify-between items-center mt-8">
-          <button
-            onClick={handleSkip}
-            className="px-4 py-2 rounded border border-white hover:bg-white hover:text-purple-900"
-          >
-            Skip
-          </button>
-
-          <button
-            onClick={handleNext}
-            className="px-6 py-3 rounded bg-blue-600 hover:bg-blue-700 font-bold"
-          >
-            Next
-          </button>
+ <div className="relative min-h-screen bg-purple-900 text-white flex justify-center">
+      {/* LEFT Ad Banner */}
+      <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
+        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
+          Left Ad
         </div>
       </div>
-    </main>
+
+      {/* RIGHT Ad Banner */}
+      <div className="hidden lg:flex fixed right-4 top-0 h-screen w-[160px] items-center justify-center z-10">
+        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
+          Right Ad
+        </div>
+      </div>
+
+      {/* TOP Ad Banner */}
+      <div className="hidden lg:flex fixed top-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
+        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
+          Top Ad
+        </div>
+      </div>
+
+      {/* BOTTOM Ad Banner */}
+      <div className="hidden lg:flex fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
+        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
+          Bottom Ad
+        </div>
+      </div>
+
+      {/* Centered Game Card */}
+      <div className="z-0 flex items-center justify-center w-full min-h-screen p-8">
+        <div className="relative bg-blue-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-10 w-[728px] h-[680px] flex flex-col justify-between">
+          {/* Top Bar */}
+          <div className="flex justify-between items-center mb-8">
+            <button onClick={() => router.back()} className="flex items-center gap-2 hover:text-gray-300">
+              <ArrowLeft />
+              <span>Back</span>
+            </button>
+            <button className="hover:text-gray-300">
+              <Settings />
+            </button>
+          </div>
+
+          {/* Center Content */}
+          <div className="flex flex-col items-center text-center gap-6 flex-grow">
+            <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
+            <h2 className="text-xl mb-4">{currentPlayer?.name}'s Turn</h2>
+
+            <div className="bg-white text-black p-6 rounded shadow-lg max-w-lg w-full mb-6">
+              <p className="text-lg mb-4">{questionText}</p>
+              <p className="font-semibold whitespace-pre-line">{showNumberOfSips()}</p>
+            </div>
+
+            {/* Like / Dislike Buttons */}
+            <div className="flex items-center gap-8 mt-6">
+              <button
+                onClick={() => handleVote('dislike')}
+                disabled={votedType !== null}
+                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'} ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <ThumbsDown />
+              </button>
+
+              <button
+                onClick={() => handleVote('like')}
+                disabled={votedType !== null}
+                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'} ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <ThumbsUp />
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Buttons */}
+          <div className="flex justify-between items-center mt-8">
+            <button
+              onClick={handleSkip}
+              className="px-4 py-2 rounded border border-white hover:bg-white hover:text-purple-900"
+            >
+              Skip
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="px-6 py-3 rounded bg-blue-600 hover:bg-blue-700 font-bold"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -9,4 +9,5 @@ type Question = {
     dislike_count: number;
     difficulty: number;
     all_players: boolean;
+    need_opposite_gender: boolean;
 };

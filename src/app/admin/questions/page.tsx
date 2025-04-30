@@ -140,6 +140,7 @@ export default function QuestionsPage() {
                             <SortableHeader label="Dirty" column="dirty" />
                             <SortableHeader label="Challenge" column="challenge" />
                             <SortableHeader label="All Players" column="all_players" />
+                            <SortableHeader label="Need opposite gender" column="need_opposite_gender" />
                             <SortableHeader label="Punishment" column="punishment" />
                             <SortableHeader label="Difficulty" column="difficulty" />
                             <SortableHeader label="Likes" column="like_count" />
@@ -163,6 +164,7 @@ export default function QuestionsPage() {
                                 <td className="p-3 border-b">{q.dirty ? 'Yes' : 'No'}</td>
                                 <td className="p-3 border-b">{q.challenge ? 'Yes' : 'No'}</td>
                                 <td className="p-3 border-b">{q.all_players ? 'Yes' : 'No'}</td>
+                                <td className="p-3 border-b">{q.need_opposite_gender === null ? 'NULL' : q.need_opposite_gender ? 'Yes' : 'No'}</td>
                                 <td className="p-3 border-b">{q.punishment}</td>
                                 <td className="p-3 border-b">{q.difficulty}</td>
                                 <td className="p-3 border-b">{q.like_count}</td>
