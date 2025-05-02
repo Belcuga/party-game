@@ -18,7 +18,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
 
     const handleSubmit = () => {
         if (name.trim()) {
-            onAdd({ id: uuid(), name: name.trim(), gender, drink, single, skipCount: 1 });
+            onAdd({ id: uuid(), name: name.trim(), gender, drink, single });
             setName('');
             setGender(Gender.None);
             onClose();
@@ -32,6 +32,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
             <div className="bg-blue-800 rounded-lg p-6 w-full max-w-sm text-white">
                 <h2 className="text-xl font-bold mb-4">Add Player</h2>
 
+                {/* name part */}
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Name</label>
                     <input
@@ -43,6 +44,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     />
                 </div>
 
+                {/* gender part */}
                 <div className="mb-6">
                     <label className="block mb-1 font-medium">Gender</label>
                     <select
@@ -50,11 +52,12 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         value={gender}
                         onChange={(e) => setGender(e.target.value as Gender)}
                     >
-                        <option className="text-black" value={Gender.Female}>Female</option>
                         <option className="text-black" value={Gender.Male}>Male</option>
+                        <option className="text-black" value={Gender.Female}>Female</option>
                     </select>
                 </div>
 
+                {/* drink part */}
                 <div className="mb-6">
                     <label className="block mb-1 font-medium">What are you drinking?</label>
                     <select
@@ -68,28 +71,45 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         <option className="text-black" value={Drink.None}>Nothing</option>
                     </select>
                 </div>
+
+                {/* single part */}
                 <div className="mb-6">
                     <label className="block mb-1 font-medium">Are you single?</label>
-                    <label className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-900 dark:focus:ring-blue-900 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                checked={single}
-                                onChange={() => setSingle(true)}
-                            />
+
+                    <div className="flex items-center gap-2 mt-2 group">
+                        <input
+                            id="singleYes"
+                            type="checkbox"
+                            className="form-checkbox h-5 w-5 text-blue-600 cursor-pointer"
+                            checked={single}
+                            onChange={() => setSingle(true)}
+                        />
+                        <span className="relative cursor-help">
                             Yes
-                    </label>
-                    <label className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-900 dark:focus:ring-blue-900 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                checked={!single}
-                                onChange={() => setSingle(false)}
-                            />
+                            <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                You can get matching questions
+                            </div>
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2 group">
+                        <input
+                            id="singleNo"
+                            type="checkbox"
+                            className="form-checkbox h-5 w-5 text-blue-600 cursor-pointer"
+                            checked={!single}
+                            onChange={() => setSingle(false)}
+                        />
+                        <span className="relative cursor-help">
                             No
-                    </label>
+                            <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                You won't get matching questions
+                            </div>
+                        </span>
+                    </div>
                 </div>
 
+                {/* Action buttons */}
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={onClose}
@@ -99,7 +119,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-4 py-2 bg-green-500 rounded hover:bg-green-600"
                     >
                         Add
                     </button>

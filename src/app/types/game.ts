@@ -1,11 +1,8 @@
-import { Drink, Gender } from "./player";
+import { Drink, Gender, Player } from "./player";
 
 export type GamePlayer = {
-    id: string;                 // Player UUID
-    name: string;
-    gender: Gender;
+    playerInfo: Player;
     skipCount: number;
-    drink: Drink;
     difficultyQueue: number[];   // 4 difficulties shuffled
     difficultyIndex: number;     // where in difficultyQueue they currently are
     totalQuestionsAnswered: number; // counts questions for bonus round + skip bonus
@@ -22,3 +19,8 @@ export type GameState = {
     bonusReady: boolean;                // Ready for bonus round (all_players = true)
     existingDifficulties: number[];
 };
+
+ export type GameContextType = {
+    gameState: GameState | null;
+    setGameState: (state: GameState) => void;
+  };

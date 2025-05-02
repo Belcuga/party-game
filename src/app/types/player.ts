@@ -4,7 +4,6 @@ export type Player = {
     gender: Gender;
     drink: Drink;
     single: boolean;
-    skipCount: number;
 };
 
 export enum Gender {

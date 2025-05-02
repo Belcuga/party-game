@@ -144,7 +144,7 @@ export default function QuestionsPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex justify-center items-center bg-purple-900 text-white">
+            <main className="min-h-screen flex justify-center items-center bg-blue-900 text-white">
                 <Loader2 className="animate-spin w-10 h-10" />
             </main>
         );

@@ -2,17 +2,19 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Settings, ThumbsUp, ThumbsDown } from 'lucide-react';
-import { useGame, GameState, GameQuestion } from '@/app/providers/GameContext';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Settings } from 'lucide-react';
+import { useGame } from '@/app/providers/GameContext';
 import { supabase } from '@/app/lib/SupabaseClient';
-import { GamePlayer } from '@/app/types/game';
 import { Drink } from '@/app/types/player';
+import { GameState } from '@/app/types/game';
+import AdsLayout from '@/app/components/ad-layout/AdsLayout';
 
 export default function PlayPage() {
   const router = useRouter();
   const { gameState, setGameState } = useGame();
   const [localLoading, setLocalLoading] = useState(true);
   const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!gameState) return;
@@ -35,11 +37,11 @@ export default function PlayPage() {
     return <div>Loading...</div>;
   }
 
-  const currentPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+  const currentPlayer = gameState.players.find(p => p.playerInfo.id === gameState.currentPlayerId);
   const questionText = replacePlayerPlaceholder(
     gameState.currentQuestion?.question || '',
     gameState,
-    currentPlayer?.id || ''
+    currentPlayer?.playerInfo.id || ''
   );
 
   async function handleVote(type: 'like' | 'dislike') {
@@ -80,8 +82,8 @@ export default function PlayPage() {
     return available[randomIndex];
   }
 
-  function pickNextQuestion(playerId: string, state: GameState): GameQuestion {
-    const player = state.players.find(p => p.id === playerId);
+  function pickNextQuestion(playerId: string, state: GameState): Question {
+    const player = state.players.find(p => p.playerInfo.id === playerId);
     if (!player) {
       const availableQuestions = state.questions.filter(
         q => !state.answeredQuestionIds.includes(q.id) && q.all_players
@@ -97,7 +99,7 @@ export default function PlayPage() {
       let desiredDifficulty = player.difficultyQueue[player.difficultyIndex];
       let allPlayersQuestion = false;
       let desiredDifficultyRequired = true;
-      if (player.id === '0') {
+      if (player.playerInfo.id === '0') {
         allPlayersQuestion = true;
         desiredDifficultyRequired = false;
       }
@@ -118,14 +120,14 @@ export default function PlayPage() {
 
     if (!question.includes(PLACEHOLDER)) return question;
 
-    const currentPlayer = state.players.find(p => p.id === currentPlayerId);
+    const currentPlayer = state.players.find(p => p.playerInfo.id === currentPlayerId);
     if (!currentPlayer) return question;
 
     // Filter eligible other players
     const otherPlayers = state.players.filter(
-      p => p.id !== currentPlayerId &&
-        p.gender !== currentPlayer.gender &&
-        p.id !== '0'
+      p => p.playerInfo.id !== currentPlayerId &&
+        p.playerInfo.gender !== currentPlayer.playerInfo.gender &&
+        p.playerInfo.id !== '0'
     );
 
     if (otherPlayers.length === 0) return question;
@@ -139,7 +141,7 @@ export default function PlayPage() {
 
     let replaced = question;
     for (let i = 0; i < placeholderCount; i++) {
-      const name = pickedPlayers[i % pickedPlayers.length].name;
+      const name = pickedPlayers[i % pickedPlayers.length].playerInfo.name;
       replaced = replaced.replace(PLACEHOLDER, name);
     }
 
@@ -156,7 +158,7 @@ export default function PlayPage() {
     if (updatedRoundPlayersLeft.length > 0) {
       const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: updatedRoundPlayersLeft });
 
-      const player = gameState.players.find(p => p.id === nextPlayerId);
+      const player = gameState.players.find(p => p.playerInfo.id === nextPlayerId);
       if (!player) return;
 
       let updatedDifficultyIndex = player.difficultyIndex + 1;
@@ -184,7 +186,7 @@ export default function PlayPage() {
     }
 
     // If players finished and bonus was done -> start new round
-    const newRoundPlayers = gameState.players.map(p => p.id);
+    const newRoundPlayers = gameState.players.map(p => p.playerInfo.id);
     updatedRoundNumber += 1;
 
     // Give extra skip every 10 rounds
@@ -194,7 +196,7 @@ export default function PlayPage() {
 
     const nextPlayerId = pickNextPlayer({ ...gameState, roundPlayersLeft: newRoundPlayers });
 
-    const player = gameState.players.find(p => p.id === nextPlayerId);
+    const player = gameState.players.find(p => p.playerInfo.id === nextPlayerId);
     if (!player) return;
 
     let updatedDifficultyIndex = player.difficultyIndex + 1;
@@ -238,9 +240,9 @@ export default function PlayPage() {
       ));
     } else {
       const multiplier =
-        currentPlayer?.drink === Drink.Beer
+        currentPlayer?.playerInfo.drink === Drink.Beer
           ? 2
-          : currentPlayer?.drink === Drink.Wine
+          : currentPlayer?.playerInfo.drink === Drink.Wine
             ? 1
             : 0.5;
       const sips = Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier);
@@ -256,107 +258,133 @@ export default function PlayPage() {
     return [...array].sort(() => Math.random() - 0.5);
   }
 
-  // function handleSkip() {
-  //   console.log('Skip logic here...');
-  // }
+  function handleSkip() {
+    if (!gameState) return;
+
+    const currentPlayerId = gameState.currentPlayerId;
+    const currentQuestion = gameState.currentQuestion;
+
+    if (!currentPlayerId || !currentQuestion) return;
+
+    const playerIndex = gameState.players.findIndex(p => p.playerInfo.id === currentPlayerId);
+    if (playerIndex === -1) return;
+
+    const player = gameState.players[playerIndex];
+
+    // ✅ Find another question with SAME difficulty (not answered + not current)
+    const availableQuestions = gameState.questions.filter(
+      (q) =>
+        q.difficulty === currentQuestion.difficulty &&
+        !gameState.answeredQuestionIds.includes(q.id) &&
+        q.id !== currentQuestion.id &&
+        !q.all_players
+    );
+
+    if (availableQuestions.length === 0) {
+      console.warn('No more questions available for this difficulty.');
+      return;
+    }
+
+    // 🔀 Pick a random new question
+    const newQuestion =
+      availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+
+    // ✅ Reduce skip count for the player (minimum 0)
+    const updatedPlayers = [...gameState.players];
+    updatedPlayers[playerIndex] = {
+      ...player,
+      skipCount: Math.max(0, player.skipCount - 1),
+    };
+
+    // ✅ Update game state with new question + updated skip count
+    setGameState({
+      ...gameState,
+      players: updatedPlayers,
+      currentQuestion: newQuestion,
+    });
+
+    setVotedType(null); // Reset like/dislike highlight
+  }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
-      {/* LEFT Ad Banner */}
-      <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
-        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
-          Left Ad
-        </div>
+    <AdsLayout>
+      {/* Back button */}
+      <div className="flex justify-between items-center mb-8">
+        <button onClick={() => router.back()} className="flex items-center gap-2 hover:text-gray-300 cursor-pointer">
+          <ArrowLeft />
+          <span>Back</span>
+        </button>
+        <button
+          onClick={() => setShowSettings((prev) => !prev)}
+          className="hover:text-gray-300 cursor-pointer">
+          <Settings />
+        </button>
       </div>
-
-      {/* RIGHT Ad Banner */}
-      <div className="hidden lg:flex fixed right-4 top-0 h-screen w-[160px] items-center justify-center z-10">
-        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
-          Right Ad
+      {/* settings popup */}
+      {showSettings && (
+        <div className="absolute top-18 right-0 bg-blue-600 text-black shadow-lg rounded-lg p-2 w-48 flex flex-col gap-2 z-10">
+          <div className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer">
+            How to play
+          </div>
+          <div className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer">
+            Contact us
+          </div>
         </div>
-      </div>
+      )}
+      {/* Center Content */}
+      <div className="flex flex-col items-center text-center gap-6 flex-grow">
+        <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
+        <h2 className="text-xl mb-4">{`${currentPlayer?.playerInfo.id === '0' ? currentPlayer?.playerInfo.name + '\'' : currentPlayer?.playerInfo.name + '\'s'}`} Turn</h2>
 
-      {/* TOP Ad Banner */}
-      <div className="hidden lg:flex fixed top-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
-        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
-          Top Ad
+        <div className="bg-white text-black p-6 rounded shadow-lg max-w-lg w-full mb-6">
+          <p className="text-lg mb-4 text-left">{questionText}</p>
+          <div className="space-y-1">{showNumberOfSips()}</div>
         </div>
-      </div>
 
-      {/* BOTTOM Ad Banner */}
-      <div className="hidden lg:flex fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
-        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
-          Bottom Ad
-        </div>
-      </div>
-
-      {/* Centered Game Card */}
-      <div className="z-0 flex items-center justify-center w-full min-h-screen p-8">
-        <div className="relative bg-blue-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-10 w-[728px] h-[680px] flex flex-col justify-between">
-          {/* Top Bar */}
-          <div className="flex justify-between items-center mb-8">
-            <button onClick={() => router.back()} className="flex items-center gap-2 hover:text-gray-300">
-              <ArrowLeft />
-              <span>Back</span>
+        {/* like/dislike */}
+        <div className="relative w-full h-36 mt-auto">
+          <div className="absolute inset-x-0 bottom-24 flex justify-center gap-10">
+            <button
+              onClick={() => handleVote('dislike')}
+              disabled={votedType !== null}
+              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
+                } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ThumbsDown />
             </button>
-            {/* <button className="hover:text-gray-300">
-              <Settings />
-            </button> */}
+
+            <button
+              onClick={() => handleVote('like')}
+              disabled={votedType !== null}
+              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
+                } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ThumbsUp />
+            </button>
           </div>
-
-          {/* Center Content */}
-          <div className="flex flex-col items-center text-center gap-6 flex-grow">
-            <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
-            <h2 className="text-xl mb-4">{`${currentPlayer?.id === '0' ? currentPlayer?.name + '\'' : currentPlayer?.name + '\'s'}`} Turn</h2>
-
-            <div className="bg-white text-black p-6 rounded shadow-lg max-w-lg w-full mb-6">
-              <p className="text-lg mb-4 text-left">{questionText}</p>
-              <div className="space-y-1">{showNumberOfSips()}</div>
-            </div>
-
-            {/* Like / Dislike Buttons */}
-            <div className="relative w-full h-36 mt-auto">
-              <div className="absolute inset-x-0 bottom-24 flex justify-center gap-10">
-                <button
-                  onClick={() => handleVote('dislike')}
-                  disabled={votedType !== null}
-                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
-                    } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <ThumbsDown />
-                </button>
-
-                <button
-                  onClick={() => handleVote('like')}
-                  disabled={votedType !== null}
-                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
-                    } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <ThumbsUp />
-                </button>
-              </div>
-              <div className="absolute inset-x-0 bottom-6 flex justify-center">
-                <button
-                  onClick={handleNext}
-                  className="w-60 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-lg shadow-lg"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+          {/* Next button */}
+          <div className="absolute inset-x-0 bottom-6 flex justify-center">
+            <button
+              onClick={handleNext}
+              className="w-60 py-4 rounded-xl bg-green-500 hover:bg-green-600 font-bold text-lg shadow-lg cursor-pointer"
+            >
+              Next
+            </button>
           </div>
         </div>
-
-        {/* <div className="flex justify-between items-center mt-8">
+        {/* Skip button */}
+        {(currentPlayer?.skipCount ?? 0) > 0 && (
+          <div className="absolute inset-x-0 bottom-1 flex justify-center">
             <button
               onClick={handleSkip}
-              className="px-4 py-2 rounded border border-white hover:bg-white hover:text-purple-900"
+              className="w-20  py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"
             >
               Skip
             </button>
           </div>
-        </div> */}
+        )
+        }
       </div>
-    </div>
+    </AdsLayout>
   );
 }

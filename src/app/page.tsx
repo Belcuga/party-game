@@ -7,10 +7,11 @@ import { v4 as uuid } from 'uuid';
 import { Drink, Gender, Player } from './types/player';
 import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
-import { GameState } from './types/game';
+import { GamePlayer, GameState } from './types/game';
 import { useGame } from './providers/GameContext';
-import { TrashIcon } from 'lucide-react';
+import { Loader2, TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
+import AdsLayout from './components/ad-layout/AdsLayout';
 
 export default function Home() {
   const router = useRouter();
@@ -22,7 +23,6 @@ export default function Home() {
       gender: Gender.Female,
       drink: Drink.Beer,
       single: true,
-      skipCount: 1,
     },
     {
       id: uuid(),
@@ -30,7 +30,6 @@ export default function Home() {
       gender: Gender.Female,
       drink: Drink.Wine,
       single: true,
-      skipCount: 1,
     },
     {
       id: uuid(),
@@ -38,7 +37,6 @@ export default function Home() {
       gender: Gender.Female,
       drink: Drink.Strong,
       single: false,
-      skipCount: 1,
     },
     {
       id: uuid(),
@@ -46,7 +44,6 @@ export default function Home() {
       gender: Gender.Male,
       drink: Drink.Beer,
       single: true,
-      skipCount: 1,
     },
     {
       id: uuid(),
@@ -54,7 +51,6 @@ export default function Home() {
       gender: Gender.Male,
       drink: Drink.Wine,
       single: false,
-      skipCount: 1,
     },
     {
       id: uuid(),
@@ -62,7 +58,6 @@ export default function Home() {
       gender: Gender.Female,
       drink: Drink.Strong,
       single: true,
-      skipCount: 1,
     },
 
   ]);
@@ -78,12 +73,20 @@ export default function Home() {
     adultMode: false,
     challenges: false,
     dirtyMode: false
-  });
+  },);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const { setGameState } = useGame();
 
   const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
     setGameSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    if (key === 'dirtyMode') {
+      setGameSettings((prev) => ({ ...prev, ['adultMode']: false }));
+      setGameSettings((prev) => ({ ...prev, ['challenges']: false }));
+    }
+    else {
+      setGameSettings((prev) => ({ ...prev, ['dirtyMode']: false }));
+    }
+
   };
 
   const startGame = async () => {
@@ -123,13 +126,13 @@ export default function Home() {
 
     const allQuestions = Array.from(questionMap.values());
     let filteredQuestions = allQuestions.filter((q: Question) => {
-      if(gameSettings.dirtyMode){
-        if(q.dirty) return true;
+      if (gameSettings.dirtyMode) {
+        if (q.dirty) return true;
         return false;
       }
-      else{
-        if (!gameSettings.adultMode && q.dirty && !gameSettings.dirtyMode) return false;
-        if (!gameSettings.challenges && q.challenge && !gameSettings.dirtyMode) return false;
+      else {
+        if (!gameSettings.adultMode && q.dirty) return false;
+        if (!gameSettings.challenges && q.challenge) return false;
         return true;
       }
     });
@@ -151,32 +154,38 @@ export default function Home() {
     const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))];
 
     const initializedPlayers = players.map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      gender: p.gender,
-      drink: p.drink,
+      playerInfo: {
+        id: String(p.id),
+        name: p.name,
+        gender: p.gender,
+        drink: p.drink,
+        single: p.single
+      },
       skipCount: 1,
       difficultyQueue: shuffleArray(existingDifficulties),
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
-    }));
+    } as GamePlayer));
 
     initializedPlayers.push({
-      id: String(0),
-      name: 'All players',
-      gender: Gender.None,
-      drink: Drink.None,
+      playerInfo: {
+        id: String(0),
+        name: 'All players',
+        gender: Gender.None,
+        drink: Drink.None,
+        single: false,
+      },
       skipCount: 0,
       difficultyQueue: [],
       difficultyIndex: 0,
       totalQuestionsAnswered: 0,
-    });
+    } as GamePlayer);
 
     const gameState: GameState = {
       players: initializedPlayers,
       questions: filteredQuestions,
       answeredQuestionIds: [],
-      roundPlayersLeft: initializedPlayers.map(p => p.id),
+      roundPlayersLeft: initializedPlayers.map(p => p.playerInfo.id),
       currentPlayerId: null,
       currentQuestion: null,
       roundNumber: 1,
@@ -198,107 +207,85 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center">
-
-      {/* LEFT Ad Banner */}
-      <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
-        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
-          Left Ad
+    <AdsLayout>
+      {loadingQuestions && (
+        <div className="flex justify-center items-center h-full w-full">
+          <Loader2 className="animate-spin w-10 h-10" />
         </div>
-      </div>
 
-      {/* RIGHT Ad Banner */}
-      <div className="hidden lg:flex fixed right-4 top-0 h-screen w-[160px] items-center justify-center z-10">
-        <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
-          Right Ad
-        </div>
-      </div>
+      )}
+      {!loadingQuestions && (
+        <main className="flex flex-col justify-center items-center text-white">
+          <h1 className="text-4xl font-extrabold mb-12 drop-shadow-lg text-center">
+            Party Game
+          </h1>
 
-      {/* TOP Ad Banner */}
-      <div className="hidden lg:flex fixed top-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
-        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
-          Top Ad
-        </div>
-      </div>
-
-      {/* BOTTOM Ad Banner */}
-      <div className="hidden lg:flex fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[728px] h-[90px] z-20">
-        <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
-          Bottom Ad
-        </div>
-      </div>
-
-      {/* Centered Game Card Wrapper */}
-      <div className="z-0 flex items-center justify-center w-full min-h-screen p-8">
-        <div className="relative bg-blue-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-10 w-[728px] h-[680px] flex flex-col justify-between">
-          <main className="flex flex-col justify-center items-center text-white">
-            <h1 className="text-4xl font-extrabold mb-12 drop-shadow-lg text-center">
-              Party Game
-            </h1>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold mb-2">Players</h2>
-              <ul className="space-y-1 mb-4 max-h-[280px] overflow-y-auto">
-                {players.map((player, i) => (
-                  <li key={i} className="flex items-center justify-between gap-2">
-                    <span>{player.name}</span>
-                    <button
-                      onClick={() => removePlayer(i)}
-                      className="text-red-400 hover:text-red-600"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="bg-green-500 px-4 py-2 rounded hover:bg-green-600"
-              >
-                ➕ Add Player
-              </button>
-            </section>
-
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
-              <div className="flex flex-col gap-3">
-                {settings.map((item, index) => (
-                  <div key={index} className="relative group">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        checked={gameSettings[item.value]}
-                        onChange={() => toggleSetting(item.value)}
-                      />
-                      {item.label}
-                    </label>
-                    <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      {item.tooltip}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={startGame}
-                className={`px-6 py-3 rounded font-bold w-full ${players.length < 2 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}>
-                Start Game
-              </button>
-            </div>
-            <Link
-              href="/admin"
-              className="absolute bottom-4 right-4 bg-white text-purple-700 font-semibold px-4 py-1.5 text-sm rounded-full shadow hover:bg-purple-100 transition"
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Players</h2>
+            <ul className="space-y-1 mb-4 max-h-[280px] overflow-y-auto">
+              {players.map((player, i) => (
+                <li key={i} className="flex items-center justify-between gap-2">
+                  <span>{player.name}</span>
+                  <button
+                    onClick={() => removePlayer(i)}
+                    className="text-red-400 hover:text-red-600"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-green-500 px-4 py-2 rounded hover:bg-green-600"
             >
-              Admin
-            </Link>
-            <AddPlayerModal
-              isOpen={modalOpen}
-              onClose={() => setModalOpen(false)}
-              onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
-            />
-          </main>
-        </div>
-      </div>
-    </div>
+              Add Player
+            </button>
+          </section>
+
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
+            <div className="flex flex-col">
+              {settings.map((item, index) => (
+                <div key={index} className="relative group">
+                  <div className="flex items-center gap-1 mt-2 group">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600 cursor-pointer"
+                      checked={gameSettings[item.value]}
+                      onChange={() => toggleSetting(item.value)}
+                    />
+                    <span className="relative cursor-help">
+                      {item.label}
+                      <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        {item.tooltip}
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={startGame}
+              className={`px-6 py-3 rounded font-bold w-full ${players.length < 2 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500  hover:bg-green-600 text-white'
+                }`}>
+              Start Game
+            </button>
+          </div>
+          <Link
+            href="/admin"
+            className="absolute bottom-4 right-4 bg-white text-purple-700 font-semibold px-4 py-1.5 text-sm rounded-full shadow hover:bg-purple-100 transition"
+          >
+            Admin
+          </Link>
+          <AddPlayerModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
+          />
+        </main>
+      )}
+
+    </AdsLayout>
   );
 }

@@ -1,47 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Drink, Gender } from '../types/player';
-
-export type GamePlayer = {
-  id: string;
-  name: string;
-  gender: Gender;
-  drink: Drink;
-  skipCount: number;
-  difficultyQueue: number[];
-  difficultyIndex: number;
-  totalQuestionsAnswered: number;
-};
-
-export type GameQuestion = {
-  id: number;
-  question: string;
-  dirty: boolean;
-  challenge: boolean;
-  punishment: number;
-  difficulty: number;
-  like_count: number;
-  dislike_count: number;
-  all_players: boolean;
-  need_opposite_gender: boolean;
-};
-
-export type GameState = {
-  players: GamePlayer[];
-  questions: GameQuestion[];
-  answeredQuestionIds: number[];
-  roundPlayersLeft: string[];
-  currentPlayerId: string | null;
-  currentQuestion: GameQuestion | null;
-  roundNumber: number;
-  existingDifficulties: number[];
-};
-
-type GameContextType = {
-  gameState: GameState | null;
-  setGameState: (state: GameState) => void;
-};
+import { GameContextType, GameState } from '../types/game';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
