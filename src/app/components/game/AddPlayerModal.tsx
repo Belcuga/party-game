@@ -103,7 +103,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         <span className="relative cursor-help">
                             No
                             <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                You won't get matching questions
+                                You will not get matching questions
                             </div>
                         </span>
                     </div>

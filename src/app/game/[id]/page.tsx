@@ -62,7 +62,7 @@ export default function PlayPage() {
       return;
     }
 
-    const currentCount = (data as any)[column] ?? 0;
+    const currentCount = (data as Question)[column] ?? 0;
 
     const { error: updateError } = await supabase
       .from('questions')
