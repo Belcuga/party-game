@@ -186,7 +186,7 @@ export default function PlayPage() {
       return;
     }
 
-    // If players finished and bonus was done -> start new round 
+    // If players finished and bonus was done -> start new round
     const newRoundPlayers = gameState.players.map(p => p.playerInfo.id);
     updatedRoundNumber += 1;
 
