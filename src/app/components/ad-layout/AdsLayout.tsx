@@ -1,7 +1,5 @@
 'use client';
 
-import { ReactNode } from 'react';
-
 export default function AdsLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen bg-blue-800 lg:bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center overflow-hidden">
