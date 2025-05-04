@@ -1,4 +1,5 @@
-import { Drink, Gender, Player } from "./player";
+import { Player } from "./player";
+import { Question } from "./question";
 
 export type GamePlayer = {
     playerInfo: Player;

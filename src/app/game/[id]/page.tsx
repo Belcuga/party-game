@@ -8,6 +8,7 @@ import { supabase } from '@/app/lib/SupabaseClient';
 import { Drink } from '@/app/types/player';
 import { GameState } from '@/app/types/game';
 import AdsLayout from '@/app/components/ad-layout/AdsLayout';
+import { Question } from '@/app/types/question';
 
 export default function PlayPage() {
   const router = useRouter();

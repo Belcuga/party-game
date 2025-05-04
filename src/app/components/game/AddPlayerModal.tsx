@@ -113,13 +113,14 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-red-400 rounded hover:bg-gray-400"
+                        className="px-4 py-2 bg-red-400 rounded hover:bg-red-600 cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-4 py-2 bg-green-500 rounded hover:bg-green-600"
+                        className={`px-4 py-2 rounded ${name ? 'bg-green-500 cursor-pointer hover:bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
+                        } ${!name ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         Add
                     </button>

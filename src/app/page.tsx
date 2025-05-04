@@ -12,6 +12,7 @@ import { useGame } from './providers/GameContext';
 import { Loader2, TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
+import { Question } from './types/question';
 
 export default function Home() {
   const router = useRouter();

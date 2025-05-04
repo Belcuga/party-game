@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/SupabaseClient';
+import { Question } from '@/app/types/question';
 
 type Props = {
     isOpen: boolean;

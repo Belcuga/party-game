@@ -5,6 +5,7 @@ import { supabase } from '@/app/lib/SupabaseClient';
 import { Loader2 } from 'lucide-react';
 import AddQuestionModal from '@/app/components/admin/AddQuestionModal';
 import { useRouter } from 'next/navigation';
+import { Question } from '@/app/types/question';
 
 export default function QuestionsPage() {
     const [questions, setQuestions] = useState<Question[]>([]);
