@@ -171,12 +171,12 @@ export default function Home() {
 
       )}
       {!loadingQuestions && (
-        <main className="flex flex-col justify-center items-center text-white">
+        <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
           <h1 className="text-4xl font-extrabold mb-12 drop-shadow-lg text-center">
-            Party Game
+            Tipsy Trials
           </h1>
 
-          <section className="mb-8">
+          <section className="mb-8 flex flex-col items-center">
             <h2 className="text-xl font-semibold mb-2">Players</h2>
             <ul className="space-y-1 mb-4 max-h-[280px] overflow-y-auto">
               {players.map((player, i) => (
@@ -199,7 +199,7 @@ export default function Home() {
             </button>
           </section>
 
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
+          <div className="absolute bottom-16 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
             <div className="flex flex-col">
               {settings.map((item, index) => (
                 <div key={index} className="relative group">
