@@ -17,51 +17,7 @@ import { Question } from './types/question';
 export default function Home() {
   const router = useRouter();
 
-  const [players, setPlayers] = useState<Player[]>([
-    {
-      id: uuid(),
-      name: "Zensko pivo single",
-      gender: Gender.Female,
-      drink: Drink.Beer,
-      single: true,
-    },
-    {
-      id: uuid(),
-      name: "Zensko vino single",
-      gender: Gender.Female,
-      drink: Drink.Wine,
-      single: true,
-    },
-    {
-      id: uuid(),
-      name: "Zensko rakija taken",
-      gender: Gender.Female,
-      drink: Drink.Strong,
-      single: false,
-    },
-    {
-      id: uuid(),
-      name: "Musko pivo single",
-      gender: Gender.Male,
-      drink: Drink.Beer,
-      single: true,
-    },
-    {
-      id: uuid(),
-      name: "Musko vino taken",
-      gender: Gender.Male,
-      drink: Drink.Wine,
-      single: false,
-    },
-    {
-      id: uuid(),
-      name: "Musko rakija single",
-      gender: Gender.Female,
-      drink: Drink.Strong,
-      single: true,
-    },
-
-  ]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
   const settings: SettingsLabel[] = [
     { label: 'Dirty (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
@@ -273,12 +229,12 @@ export default function Home() {
               Start Game
             </button>
           </div>
-          <Link
+          {/* <Link
             href="/admin"
             className="absolute bottom-4 right-4 bg-white text-purple-700 font-semibold px-4 py-1.5 text-sm rounded-full shadow hover:bg-purple-100 transition"
           >
             Admin
-          </Link>
+          </Link> */}
           <AddPlayerModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}

@@ -315,11 +315,11 @@ export default function PlayPage() {
           <ArrowLeft />
           <span>Back</span>
         </button>
-        <button
+        {/* <button
           onClick={() => setShowSettings((prev) => !prev)}
           className="hover:text-gray-300 cursor-pointer">
           <Settings />
-        </button>
+        </button> */}
       </div>
       {/* settings popup */}
       {showSettings && (
