@@ -15,7 +15,7 @@ export default function PlayPage() {
   const { gameState, setGameState } = useGame();
   const [localLoading, setLocalLoading] = useState(true);
   const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
+  // const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!gameState) return;
@@ -322,7 +322,7 @@ export default function PlayPage() {
         </button> */}
       </div>
       {/* settings popup */}
-      {showSettings && (
+      {/* {showSettings && ( */}
         <div className="absolute top-18 right-0 bg-blue-600 text-black shadow-lg rounded-lg p-2 w-48 flex flex-col gap-2 z-10">
           <div className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer">
             How to play
@@ -331,7 +331,7 @@ export default function PlayPage() {
             Contact us
           </div>
         </div>
-      )}
+      {/* )} */}
       {/* Center Content */}
       <div className="flex flex-col items-center text-center gap-6 flex-grow">
         <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
