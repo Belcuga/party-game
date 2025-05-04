@@ -1,12 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 export default function AdminPage() {
-    if (process.env.NODE_ENV !== 'development') {
-        redirect('/');
-      }
     return (
         <main className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-950 to-blue-900 text-white p-4">
             <div className="w-full max-w-3xl bg-blue-800/80 backdrop-blur-md p-6 rounded-xl shadow-lg flex flex-col gap-8">
