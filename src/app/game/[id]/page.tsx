@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Settings } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useGame } from '@/app/providers/GameContext';
 import { supabase } from '@/app/lib/SupabaseClient';
 import { Drink } from '@/app/types/player';
