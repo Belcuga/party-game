@@ -97,7 +97,7 @@ export default function PlayPage() {
       return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     }
     else {
-      let desiredDifficulty = player.difficultyQueue[player.difficultyIndex];
+      const desiredDifficulty = player.difficultyQueue[player.difficultyIndex];
       let allPlayersQuestion = false;
       let desiredDifficultyRequired = true;
       if (player.playerInfo.id === '0') {
@@ -152,7 +152,7 @@ export default function PlayPage() {
   function handleNext() {
     if (!gameState) return;
     const updatedAnsweredIds = [...gameState.answeredQuestionIds, gameState.currentQuestion?.id ?? 0];
-    let updatedRoundPlayersLeft = gameState.roundPlayersLeft.filter(id => id !== gameState.currentPlayerId);
+    const updatedRoundPlayersLeft = gameState.roundPlayersLeft.filter(id => id !== gameState.currentPlayerId);
     let updatedRoundNumber = gameState.roundNumber;
 
     // First: If still normal players left

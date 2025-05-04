@@ -126,7 +126,7 @@ export default function Home() {
     }
 
     const allQuestions = Array.from(questionMap.values());
-    let filteredQuestions = allQuestions.filter((q: Question) => {
+    const filteredQuestions = allQuestions.filter((q: Question) => {
       if (gameSettings.dirtyMode) {
         if (q.dirty) return true;
         return false;
