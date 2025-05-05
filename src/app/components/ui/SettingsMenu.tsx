@@ -59,7 +59,7 @@ export default function SettingsMenu() {
         </div>
       </Modal>
 
-      {/* Contact Us Modal */}
+      {/* Contact Us Modal */} 
       <Modal isOpen={contactOpen} onClose={() => setContactOpen(false)}>
         <div className="p-4 max-w-md mx-auto">
           <h2 className="text-xl font-bold mb-4 text-center">Contact Us</h2>
