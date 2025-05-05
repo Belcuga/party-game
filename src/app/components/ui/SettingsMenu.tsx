@@ -46,9 +46,9 @@ export default function SettingsMenu() {
         <div className="p-4 max-w-md mx-auto">
           <h2 className="text-xl font-bold mb-4 text-center">How to Play</h2>
           <p className="mb-4 text-sm text-gray-200">
-            🎉 Add players and pick your game modes (Dirty, Challenges, etc.).<br /><br />
-            🔄 Players take turns completing fun or spicy challenges.<br /><br />
-            ✅ Keep playing until you are ready to stop. Have fun!
+            Add players and pick your game modes (Dirty, Challenges, etc.).<br /><br />
+            Players take turns completing fun or spicy challenges.<br /><br />
+            Keep playing until you are ready to stop. Have fun!
           </p>
           <button
             onClick={() => setHowToPlayOpen(false)}
@@ -59,12 +59,12 @@ export default function SettingsMenu() {
         </div>
       </Modal>
 
-      {/* Contact Us Modal */} 
+      {/* Contact Us Modal */}
       <Modal isOpen={contactOpen} onClose={() => setContactOpen(false)}>
         <div className="p-4 max-w-md mx-auto">
           <h2 className="text-xl font-bold mb-4 text-center">Contact Us</h2>
           <p className="mb-4 text-sm text-gray-200 text-center">
-            💬 Have questions, feedback, or need support? <br /> Reach out to us at:<br />
+            Have questions, feedback, or need support? <br /> Reach out to us at:<br />
             <span className="font-semibold">support@tipsytrials.com</span>
           </p>
           <button
