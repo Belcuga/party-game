@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Settings } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useGame } from '@/app/providers/GameContext';
 import { supabase } from '@/app/lib/SupabaseClient';
 import { Drink } from '@/app/types/player';
@@ -16,7 +16,6 @@ export default function PlayPage() {
   const { gameState, setGameState } = useGame();
   const [localLoading, setLocalLoading] = useState(true);
   const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!gameState) return;

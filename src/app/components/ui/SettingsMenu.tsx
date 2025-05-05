@@ -48,7 +48,7 @@ export default function SettingsMenu() {
           <p className="mb-4 text-sm text-gray-200">
             🎉 Add players and pick your game modes (Dirty, Challenges, etc.).<br /><br />
             🔄 Players take turns completing fun or spicy challenges.<br /><br />
-            ✅ Keep playing until you're ready to stop. Have fun!
+            ✅ Keep playing until you are ready to stop. Have fun!
           </p>
           <button
             onClick={() => setHowToPlayOpen(false)}
