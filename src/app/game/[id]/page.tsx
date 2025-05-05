@@ -2,20 +2,21 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Settings } from 'lucide-react';
 import { useGame } from '@/app/providers/GameContext';
 import { supabase } from '@/app/lib/SupabaseClient';
 import { Drink } from '@/app/types/player';
 import { GameState } from '@/app/types/game';
 import AdsLayout from '@/app/components/ad-layout/AdsLayout';
 import { Question } from '@/app/types/question';
+import SettingsMenu from '@/app/components/ui/SettingsMenu';
 
 export default function PlayPage() {
   const router = useRouter();
   const { gameState, setGameState } = useGame();
   const [localLoading, setLocalLoading] = useState(true);
   const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
-  // const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!gameState) return;
@@ -309,83 +310,88 @@ export default function PlayPage() {
 
   return (
     <AdsLayout>
-      {/* Back button */}
-      <div className="flex justify-between items-center mb-8">
-        <button onClick={() => router.back()} className="flex items-center gap-2 hover:text-gray-300 cursor-pointer">
+    <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4">
+      {/* Top: Back + Settings */}
+      <div className="flex justify-between items-center w-full mb-4">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
+        >
           <ArrowLeft />
           <span>Back</span>
         </button>
-        {/* <button
-          onClick={() => setShowSettings((prev) => !prev)}
-          className="hover:text-gray-300 cursor-pointer">
-          <Settings />
-        </button> */}
+        <SettingsMenu />
       </div>
-      {/* settings popup */}
-      {/* {showSettings && ( */}
-        <div className="absolute top-18 right-0 bg-blue-600 text-black shadow-lg rounded-lg p-2 w-48 flex flex-col gap-2 z-10">
-          <div className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer">
-            How to play
-          </div>
-          <div className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer">
-            Contact us
-          </div>
-        </div>
-      {/* )} */}
-      {/* Center Content */}
-      <div className="flex flex-col items-center text-center gap-6 flex-grow">
-        <h1 className="text-2xl font-bold mb-6">Round {gameState.roundNumber}</h1>
-        <h2 className="text-xl mb-4">{`${currentPlayer?.playerInfo.id === '0' ? currentPlayer?.playerInfo.name + '\'' : currentPlayer?.playerInfo.name + '\'s'}`} Turn</h2>
-
-        <div className="bg-white text-black p-6 rounded shadow-lg max-w-lg w-full mb-6">
+  
+      {/* Main content */}
+      <div className="flex flex-col items-center w-full flex-1">
+        <h1 className="text-2xl font-bold mb-4">Tipsy Trials</h1>
+        <h2 className="text-xl mb-4">
+          {`${currentPlayer?.playerInfo.id === '0'
+            ? currentPlayer?.playerInfo.name + '\''
+            : currentPlayer?.playerInfo.name + '\'s'
+            } Turn`}
+        </h2>
+  
+        {/* Question */}
+        <div className="bg-white text-black p-4 sm:p-6 rounded shadow-lg w-full mb-6">
           <p className="text-lg mb-4 text-left">{questionText}</p>
           <div className="space-y-1">{showNumberOfSips()}</div>
         </div>
-
-        {/* like/dislike */}
-        <div className="relative w-full h-36 mt-auto">
-          <div className="absolute inset-x-0 bottom-24 flex justify-center gap-10">
+  
+        {/* Spacer that grows to push buttons down */}
+        <div className="flex-1" />
+  
+        {/* Action buttons */}
+        <div className="fixed inset-x-0 bottom-[40px] sm:bottom-[60px] flex flex-col items-center gap-4 px-4">
+          <div className="flex justify-center gap-10">
             <button
               onClick={() => handleVote('dislike')}
               disabled={votedType !== null}
-              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'dislike' ? 'bg-red-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
-                } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'dislike'
+                ? 'bg-red-600 scale-110'
+                : 'bg-gray-700 hover:bg-gray-600'
+                } ${votedType !== null && votedType !== 'dislike'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                }`}
             >
               <ThumbsDown />
             </button>
-
+  
             <button
               onClick={() => handleVote('like')}
               disabled={votedType !== null}
-              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'like' ? 'bg-green-600 scale-110' : 'bg-gray-700 hover:bg-gray-600'
-                } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'like'
+                ? 'bg-green-600 scale-110'
+                : 'bg-gray-700 hover:bg-gray-600'
+                } ${votedType !== null && votedType !== 'like'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                }`}
             >
               <ThumbsUp />
             </button>
           </div>
-          {/* Next button */}
-          <div className="absolute inset-x-0 bottom-6 flex justify-center">
-            <button
-              onClick={handleNext}
-              className="w-60 py-4 rounded-xl bg-green-500 hover:bg-green-600 font-bold text-lg shadow-lg cursor-pointer"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-        {/* Skip button */}
-        {(currentPlayer?.skipCount ?? 0) > 0 && (
-          <div className="absolute inset-x-0 bottom-1 flex justify-center">
+  
+          <button
+            onClick={handleNext}
+            className="w-60 py-4 rounded-xl bg-green-500 hover:bg-green-600 font-bold text-lg shadow-lg cursor-pointer"
+          >
+            Next
+          </button>
+  
+          {(currentPlayer?.skipCount ?? 0) > 0 && (
             <button
               onClick={handleSkip}
-              className="w-20  py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"
+              className="w-20 py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"
             >
               Skip
             </button>
-          </div>
-        )
-        }
+          )}
+        </div>
       </div>
-    </AdsLayout>
+    </div>
+  </AdsLayout>
   );
 }

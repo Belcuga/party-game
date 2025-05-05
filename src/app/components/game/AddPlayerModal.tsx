@@ -37,6 +37,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <label className="block mb-1 font-medium">Name</label>
                     <input
                         type="text"
+                        maxLength={20}
                         className="w-full px-4 py-2 rounded border"
                         placeholder="Enter player name"
                         value={name}

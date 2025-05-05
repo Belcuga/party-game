@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { Drink, Gender, Player } from './types/player';
 import AddPlayerModal from './components/game/AddPlayerModal';
@@ -12,11 +12,30 @@ import { Loader2, TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
+import SettingsMenu from './components/ui/SettingsMenu';
 
 export default function Home() {
   const router = useRouter();
 
   const [players, setPlayers] = useState<Player[]>([]);
+
+  useEffect(() => {
+    const savedPlayers = localStorage.getItem('tipsyPlayers');
+    if (savedPlayers) {
+      try {
+        const parsed = JSON.parse(savedPlayers);
+        if (Array.isArray(parsed)) {
+          setPlayers(parsed);
+        }
+      } catch (err) {
+        console.error('Failed to parse saved players:', err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tipsyPlayers', JSON.stringify(players));
+  }, [players]);
 
   const settings: SettingsLabel[] = [
     { label: 'Dirty (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
@@ -172,6 +191,10 @@ export default function Home() {
       )}
       {!loadingQuestions && (
         <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
+          <div className="absolute top-10 right-10">
+            <SettingsMenu />
+          </div>
+
           <h1 className="text-4xl font-extrabold mb-12 drop-shadow-lg text-center">
             Tipsy Trials
           </h1>
