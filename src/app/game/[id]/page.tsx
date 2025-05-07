@@ -39,7 +39,7 @@ export default function PlayPage() {
   }
 
   const currentPlayer = gameState.players.find(p => p.playerInfo.id === gameState.currentPlayerId);
-  const questionText = replacePlayerPlaceholder(
+  let questionText = replacePlayerPlaceholder(
     gameState.currentQuestion?.question || '',
     gameState,
     currentPlayer?.playerInfo.id || ''
@@ -118,7 +118,7 @@ export default function PlayPage() {
           q => {
             const matchCount = (q.question.match(/\$\{player\}/g) || []).length;
             return (!desiredDifficultyRequired ||
-              (q.difficulty === desiredDifficulty)) &&
+              (q.difficulty === diff)) &&
               !state.answeredQuestionIds.includes(q.id) &&
               q.all_players === allPlayersQuestion &&
               matchCount <= otherPlayers.length
@@ -147,10 +147,6 @@ export default function PlayPage() {
         p.playerInfo.id !== '0'
     );
     const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
-    if (otherPlayers.length < placeholderCount) {
-      handleSkip();
-      return question;
-    };
     if (otherPlayers.length === 0) return question;
 
     // Count how many placeholders are in the string
@@ -400,7 +396,7 @@ export default function PlayPage() {
               Next
             </button>
 
-            {(currentPlayer?.skipCount ?? 0) > 0 && (
+            {(currentPlayer?.skipCount ?? 0) > 0 && currentPlayer?.playerInfo.id !== '0' && (
               <button
                 onClick={handleSkip}
                 className="w-20 py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"

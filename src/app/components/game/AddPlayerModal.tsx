@@ -12,15 +12,15 @@ type Props = {
 
 export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
     const [name, setName] = useState('');
-    const [gender, setGender] = useState<Gender>(Gender.None);
-    const [drink, setDrink] = useState<Drink>(Drink.None);
-    const [single, setSingle] = useState<boolean>(false);
+    const [gender, setGender] = useState<Gender>(Gender.Male);
+    const [drink, setDrink] = useState<Drink>(Drink.Beer);
+    const [single, setSingle] = useState<boolean>(true);
 
     const handleSubmit = () => {
         if (name.trim()) {
             onAdd({ id: uuid(), name: name.trim(), gender, drink, single });
             setName('');
-            setGender(Gender.None);
+            setGender(Gender.Male);
             onClose();
         }
     };
