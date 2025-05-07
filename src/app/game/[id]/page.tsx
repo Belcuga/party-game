@@ -104,13 +104,29 @@ export default function PlayPage() {
         allPlayersQuestion = true;
         desiredDifficultyRequired = false;
       }
-      const availableQuestions = state.questions.filter(
-        q => (!desiredDifficultyRequired || (q.difficulty === desiredDifficulty)) && !state.answeredQuestionIds.includes(q.id) && q.all_players === allPlayersQuestion
-      );
-      if (availableQuestions.length === 0) {
-        throw new Error('No questions available for this difficulty');
-      }
 
+      const otherPlayers = state.players.filter(
+        p => p.playerInfo.id !== player.playerInfo.id &&
+          p.playerInfo.gender !== player.playerInfo.gender &&
+          p.playerInfo.single &&
+          p.playerInfo.id !== '0'
+      );
+      let diff = desiredDifficulty;
+      let availableQuestions: Question[] = [];
+      while (availableQuestions.length === 0) {
+        availableQuestions = state.questions.filter(
+          q => {
+            const matchCount = (q.question.match(/\$\{player\}/g) || []).length;
+            return (!desiredDifficultyRequired ||
+              (q.difficulty === desiredDifficulty)) &&
+              !state.answeredQuestionIds.includes(q.id) &&
+              q.all_players === allPlayersQuestion &&
+              matchCount <= otherPlayers.length
+          }
+
+        );
+        diff--;
+      }
       return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     }
 
@@ -123,18 +139,22 @@ export default function PlayPage() {
 
     const currentPlayer = state.players.find(p => p.playerInfo.id === currentPlayerId);
     if (!currentPlayer) return question;
-
     // Filter eligible other players
     const otherPlayers = state.players.filter(
       p => p.playerInfo.id !== currentPlayerId &&
         p.playerInfo.gender !== currentPlayer.playerInfo.gender &&
+        p.playerInfo.single &&
         p.playerInfo.id !== '0'
     );
-
+    const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
+    if (otherPlayers.length < placeholderCount) {
+      handleSkip();
+      return question;
+    };
     if (otherPlayers.length === 0) return question;
 
     // Count how many placeholders are in the string
-    const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
+    // const placeholderCount = (question.match(/\$\{player\}/g) || []).length;
 
     // Shuffle and pick unique players for each placeholder
     const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
@@ -309,88 +329,88 @@ export default function PlayPage() {
 
   return (
     <AdsLayout>
-    <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4">
-      {/* Top: Back + Settings */}
-      <div className="flex justify-between items-center w-full mb-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
-        >
-          <ArrowLeft />
-          <span>Back</span>
-        </button>
-        <SettingsMenu />
-      </div>
-  
-      {/* Main content */}
-      <div className="flex flex-col items-center w-full flex-1">
-        <h1 className="text-2xl font-bold mb-4">Tipsy Trials</h1>
-        <h2 className="text-xl mb-4">
-          {`${currentPlayer?.playerInfo.id === '0'
-            ? currentPlayer?.playerInfo.name + '\''
-            : currentPlayer?.playerInfo.name + '\'s'
-            } Turn`}
-        </h2>
-  
-        {/* Question */}
-        <div className="bg-white text-black p-4 sm:p-6 rounded shadow-lg w-full mb-6">
-          <p className="text-lg mb-4 text-left">{questionText}</p>
-          <div className="space-y-1">{showNumberOfSips()}</div>
-        </div>
-  
-        {/* Spacer that grows to push buttons down */}
-        <div className="flex-1" />
-  
-        {/* Action buttons */}
-        <div className="fixed inset-x-0 bottom-[40px] sm:bottom-[60px] flex flex-col items-center gap-4 px-4">
-          <div className="flex justify-center gap-10">
-            <button
-              onClick={() => handleVote('dislike')}
-              disabled={votedType !== null}
-              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'dislike'
-                ? 'bg-red-600 scale-110'
-                : 'bg-gray-700 hover:bg-gray-600'
-                } ${votedType !== null && votedType !== 'dislike'
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
-                }`}
-            >
-              <ThumbsDown />
-            </button>
-  
-            <button
-              onClick={() => handleVote('like')}
-              disabled={votedType !== null}
-              className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'like'
-                ? 'bg-green-600 scale-110'
-                : 'bg-gray-700 hover:bg-gray-600'
-                } ${votedType !== null && votedType !== 'like'
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
-                }`}
-            >
-              <ThumbsUp />
-            </button>
-          </div>
-  
+      <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4">
+        {/* Top: Back + Settings */}
+        <div className="flex justify-between items-center w-full mb-4">
           <button
-            onClick={handleNext}
-            className="w-60 py-4 rounded-xl bg-green-500 hover:bg-green-600 font-bold text-lg shadow-lg cursor-pointer"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
           >
-            Next
+            <ArrowLeft />
+            <span>Back</span>
           </button>
-  
-          {(currentPlayer?.skipCount ?? 0) > 0 && (
+          <SettingsMenu />
+        </div>
+
+        {/* Main content */}
+        <div className="flex flex-col items-center w-full flex-1">
+          <h1 className="text-2xl font-bold mb-4">Tipsy Trials</h1>
+          <h2 className="text-xl mb-4">
+            {`${currentPlayer?.playerInfo.id === '0'
+              ? currentPlayer?.playerInfo.name + '\''
+              : currentPlayer?.playerInfo.name + '\'s'
+              } Turn`}
+          </h2>
+
+          {/* Question */}
+          <div className="bg-white text-black p-4 sm:p-6 rounded shadow-lg w-full mb-6">
+            <p className="text-lg mb-4 text-left">{questionText}</p>
+            <div className="space-y-1">{showNumberOfSips()}</div>
+          </div>
+
+          {/* Spacer that grows to push buttons down */}
+          <div className="flex-1" />
+
+          {/* Action buttons */}
+          <div className="fixed inset-x-0 bottom-[40px] sm:bottom-[60px] flex flex-col items-center gap-4 px-4">
+            <div className="flex justify-center gap-10">
+              <button
+                onClick={() => handleVote('dislike')}
+                disabled={votedType !== null}
+                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'dislike'
+                  ? 'bg-red-600 scale-110'
+                  : 'bg-gray-700 hover:bg-gray-600'
+                  } ${votedType !== null && votedType !== 'dislike'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                  }`}
+              >
+                <ThumbsDown />
+              </button>
+
+              <button
+                onClick={() => handleVote('like')}
+                disabled={votedType !== null}
+                className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-200 cursor-pointer ${votedType === 'like'
+                  ? 'bg-green-600 scale-110'
+                  : 'bg-gray-700 hover:bg-gray-600'
+                  } ${votedType !== null && votedType !== 'like'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                  }`}
+              >
+                <ThumbsUp />
+              </button>
+            </div>
+
             <button
-              onClick={handleSkip}
-              className="w-20 py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"
+              onClick={handleNext}
+              className="w-60 py-4 rounded-xl bg-green-500 hover:bg-green-600 font-bold text-lg shadow-lg cursor-pointer"
             >
-              Skip
+              Next
             </button>
-          )}
+
+            {(currentPlayer?.skipCount ?? 0) > 0 && (
+              <button
+                onClick={handleSkip}
+                className="w-20 py-2 rounded-xl bg-gray-500 hover:bg-gray-600 font-bold text-lg shadow-lg cursor-pointer"
+              >
+                Skip
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  </AdsLayout>
+    </AdsLayout>
   );
 }

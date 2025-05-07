@@ -5,7 +5,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
     <div className="relative min-h-screen bg-blue-800 lg:bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center overflow-hidden">
       
       {/* Ads and dark background: only on lg+ */}
-      <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
+      {/* <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
         <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
           Left Ad
         </div>
@@ -24,7 +24,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
         <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
           Bottom Ad
         </div>
-      </div>
+      </div> */}
 
       {/* Main content box: lg+ version with wrapper */}
       <div className="hidden lg:flex z-0 items-center justify-center w-full min-h-screen p-4">

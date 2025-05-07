@@ -31,10 +31,16 @@ export default function QuestionsPage() {
             return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
         }
 
-        if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
-            return sortDirection === 'asc'
-                ? Number(valueA) - Number(valueB)
-                : Number(valueB) - Number(valueA);
+        if (typeof valueA === 'boolean' || valueA === null && typeof valueB === 'boolean' || valueB === null) {
+            const rank = (val: string | number | boolean | null, direction: string) => {
+                if (direction === 'asc') {
+                    return val === true ? 0 : val === false ? 1 : 2;
+                } else {
+                    return val === null ? 0 : val === false ? 1 : 2;
+                }
+            };
+        
+            return rank(valueA, sortDirection) - rank(valueB, sortDirection);
         }
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
