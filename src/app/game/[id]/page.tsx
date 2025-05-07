@@ -39,7 +39,7 @@ export default function PlayPage() {
   }
 
   const currentPlayer = gameState.players.find(p => p.playerInfo.id === gameState.currentPlayerId);
-  let questionText = replacePlayerPlaceholder(
+  const questionText = replacePlayerPlaceholder(
     gameState.currentQuestion?.question || '',
     gameState,
     currentPlayer?.playerInfo.id || ''
