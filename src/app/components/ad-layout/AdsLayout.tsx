@@ -1,6 +1,10 @@
 'use client';
 
+import { useGame } from "@/app/providers/GameContext";
+import GlobalLoader from "../ui/GlobalLoader";
+
 export default function AdsLayout({ children }: { children: React.ReactNode }) {
+  const { loading } = useGame();
   return (
     <div className="relative min-h-screen bg-blue-800 lg:bg-gradient-to-br from-blue-950 to-blue-900 text-white flex justify-center overflow-hidden">
       
@@ -29,7 +33,14 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
       {/* Main content box: lg+ version with wrapper */}
       <div className="hidden lg:flex z-0 items-center justify-center w-full min-h-screen p-4">
         <div className="relative bg-blue-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-4 sm:p-6 md:p-10 w-full max-w-[728px] min-h-[680px] flex flex-col justify-between overflow-y-auto">
+       {loading && (
+        <GlobalLoader />
+       )} 
+        {!loading && (
+          <>
           {children}
+          </>
+        )}
         </div>
       </div>
 

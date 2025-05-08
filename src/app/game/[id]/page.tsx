@@ -13,11 +13,11 @@ import SettingsMenu from '@/app/components/ui/SettingsMenu';
 
 export default function PlayPage() {
   const router = useRouter();
-  const { gameState, setGameState } = useGame();
-  const [localLoading, setLocalLoading] = useState(true);
+  const { gameState, setGameState, setLoading } = useGame();
   const [votedType, setVotedType] = useState<'like' | 'dislike' | null>(null);
 
   useEffect(() => {
+
     if (!gameState) return;
 
     if (!gameState.currentPlayerId) {
@@ -30,12 +30,11 @@ export default function PlayPage() {
         currentQuestion: nextQuestion,
       });
     }
-
-    setLocalLoading(false);
+    setLoading(false);
   }, [gameState]);
 
-  if (!gameState || localLoading) {
-    return <div>Loading...</div>;
+  if (!gameState) {
+    return <></>
   }
 
   const currentPlayer = gameState.players.find(p => p.playerInfo.id === gameState.currentPlayerId);
@@ -243,29 +242,35 @@ export default function PlayPage() {
   function showNumberOfSips() {
     if (gameState?.currentQuestion?.all_players) {
       const punishment = gameState.currentQuestion.punishment ?? 0;
-
       const sips = [
-        `Beer drinkers take ${punishment * 2} sips`,
-        `Wine drinkers take ${punishment * 1} sips`,
-        `Strong drink drinkers take ${Math.ceil(punishment * 0.5)} sips`,
+        `Beer drinker - take ${Math.ceil(punishment * 1.5)} sips`,
+        `Wine drinker - take ${punishment * 1} sips`,
+        `Strong drinks - take ${Math.ceil(punishment * 0.5)} sips`,
       ];
 
+      if (gameState.currentQuestion.question.includes('Everyone')) {
+        sips.unshift('If your answer is yes and you are:')
+      }
+      else if (gameState.currentQuestion.question.includes(`Who’s`)) {
+        sips.unshift('The person with most votes, if they are:')
+      }
+
       return sips.map((line, idx) => (
-        <p key={idx} className="leading-tight text-left font-semibold">
+        <p key={idx} className={`leading-tight text-left ${idx === 0 ? 'font-semibold' : ''}`}>
           {line}
         </p>
       ));
     } else {
       const multiplier =
         currentPlayer?.playerInfo.drink === Drink.Beer
-          ? 2
+          ? 1.5
           : currentPlayer?.playerInfo.drink === Drink.Wine
             ? 1
             : 0.5;
       const sips = Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier);
       return (
         <p className="leading-tight text-left font-semibold">
-          take {sips} sips
+          Answer or Take {sips} Sips
         </p>
       );
     }
@@ -333,14 +338,19 @@ export default function PlayPage() {
             className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
           >
             <ArrowLeft />
-            <span>Back</span>
           </button>
+
+          <div className="flex items-center gap-2 ml-[-20px]">
+            <img src="/logo.png" width={30} height={30} alt="Logo" />
+            <h1 className="text-2xl font-bold">Tipsy Trials</h1>
+          </div>
+
           <SettingsMenu />
         </div>
 
         {/* Main content */}
         <div className="flex flex-col items-center w-full flex-1">
-          <h1 className="text-2xl font-bold mb-4">Tipsy Trials</h1>
+
           <h2 className="text-xl mb-4">
             {`${currentPlayer?.playerInfo.id === '0'
               ? currentPlayer?.playerInfo.name + '\''

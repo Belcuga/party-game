@@ -68,7 +68,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     >
                         <option className="text-black" value={Drink.Beer}>Beer</option>
                         <option className="text-black" value={Drink.Wine}>Wine</option>
-                        <option className="text-black" value={Drink.Strong}>Strong drink</option>
+                        <option className="text-black" value={Drink.Strong}>Whiskey, Vodka, or other Strong Drinks</option>
                         <option className="text-black" value={Drink.None}>Nothing</option>
                     </select>
                 </div>
@@ -85,11 +85,8 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                             checked={single}
                             onChange={() => setSingle(true)}
                         />
-                        <span className="relative cursor-help">
-                            Yes
-                            <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                You can get matching questions
-                            </div>
+                        <span className="relative">
+                            Yes - You will get spicy challenges with other players
                         </span>
                     </div>
 
@@ -101,11 +98,8 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                             checked={!single}
                             onChange={() => setSingle(false)}
                         />
-                        <span className="relative cursor-help">
-                            No
-                            <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                You will not get matching questions
-                            </div>
+                        <span className="relative">
+                            No - You will not get spicy challenges with other players
                         </span>
                     </div>
                 </div>
@@ -121,7 +115,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <button
                         onClick={handleSubmit}
                         className={`px-4 py-2 rounded ${name ? 'bg-green-500 cursor-pointer hover:bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
-                        } ${!name ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${!name ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         Add
                     </button>

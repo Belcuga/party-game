@@ -3,9 +3,16 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { GameContextType, GameState } from '../types/game';
 
-const GameContext = createContext<GameContextType | undefined>(undefined);
+type ExtendedGameContextType = GameContextType & {
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const GameContext = createContext<ExtendedGameContextType | undefined>(undefined);
 
 export function GameProvider({ children }: { children: ReactNode }) {
+  const [loading, setLoading] = useState(false);
+  
   const [gameState, setGameState] = useState<GameState | null>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('party-game-state');
@@ -19,6 +26,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
+
   useEffect(() => {
     if (gameState) {
       localStorage.setItem('party-game-state', JSON.stringify(gameState));
@@ -26,7 +34,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [gameState]);
 
   return (
-    <GameContext.Provider value={{ gameState, setGameState }}>
+    <GameContext.Provider value={{ gameState, setGameState, loading, setLoading }}>
       {children}
     </GameContext.Provider>
   );
@@ -37,5 +45,5 @@ export function useGame() {
   if (!context) {
     throw new Error('useGame must be used within a GameProvider');
   }
-  return context;
+  return context; 
 }

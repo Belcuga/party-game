@@ -8,7 +8,7 @@ import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
 import { GamePlayer, GameState } from './types/game';
 import { useGame } from './providers/GameContext';
-import { Loader2, TrashIcon } from 'lucide-react';
+import { TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
@@ -34,13 +34,15 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('tipsyPlayers', JSON.stringify(players));
+    if (players.length > 0) {
+      localStorage.setItem('tipsyPlayers', JSON.stringify(players));
+    }
   }, [players]);
 
   const settings: SettingsLabel[] = [
-    { label: 'Dirty (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
-    { label: 'Challenges', tooltip: 'Include physical or action-based challenges', value: 'challenges' },
-    { label: 'Dirty mode only (18+)', tooltip: 'Dirty questions and challenges only', value: 'dirtyMode' },
+    { label: 'Include Spicy Questions (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
+    { label: 'Include Challenges', tooltip: 'Include physical or action-based challenges', value: 'challenges' },
+    { label: 'Only Spicy Stuff (18+)', tooltip: 'Dirty questions and challenges only', value: 'dirtyMode' },
   ];
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -49,8 +51,7 @@ export default function Home() {
     challenges: false,
     dirtyMode: false
   },);
-  const [loadingQuestions, setLoadingQuestions] = useState(false);
-  const { setGameState } = useGame();
+  const { setGameState, setLoading } = useGame();
 
   const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
     setGameSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -67,7 +68,7 @@ export default function Home() {
   const startGame = async () => {
     if (players.length < 2) return;
 
-    setLoadingQuestions(true);
+    setLoading(true);
     const id = uuid();
 
     const pageSize = 1000;
@@ -87,7 +88,7 @@ export default function Home() {
 
       if (error) {
         console.error('Failed to fetch questions:', error.message);
-        setLoadingQuestions(false);
+        setLoading(false);
         return;
       }
 
@@ -170,7 +171,6 @@ export default function Home() {
 
     setGameState(gameState);
     router.push(`/game/${id}`);
-    setLoadingQuestions(false);
   };
 
   const removePlayer = (index: number) => {
@@ -183,25 +183,19 @@ export default function Home() {
 
   return (
     <AdsLayout>
-      {loadingQuestions && (
-        <div className="flex justify-center items-center h-full w-full">
-          <Loader2 className="animate-spin w-10 h-10" />
-        </div>
-
-      )}
-      {!loadingQuestions && (
         <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
           <div className="absolute top-10 right-10">
             <SettingsMenu />
           </div>
 
-          <h1 className="text-4xl font-extrabold mb-12 drop-shadow-lg text-center">
-            Tipsy Trials
-          </h1>
+          <div className="flex items-center gap-4 ml-[-20px] mb-12">
+            <img src="/logo.png" width={40} height={40} alt="Logo" />
+            <h1 className="text-4xl font-extrabold drop-shadow-lg text-center">Tipsy Trials</h1>
+          </div>
 
           <section className="mb-8 flex flex-col items-center">
             <h2 className="text-xl font-semibold mb-2">Players</h2>
-            <ul className="space-y-1 mb-4 max-h-[280px] overflow-y-auto">
+            <ul className="space-y-1 mb-4 max-h-[150px] sm:max-h-[250px] overflow-y-auto">
               {players.map((player, i) => (
                 <li key={i} className="flex items-center justify-between gap-2">
                   <span>{player.name}</span>
@@ -224,6 +218,7 @@ export default function Home() {
 
           <div className="absolute bottom-16 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
             <div className="flex flex-col">
+              <div className='font-bold '>Choose Your Mode</div>
               {settings.map((item, index) => (
                 <div key={index} className="relative group">
                   <div className="flex items-center gap-1 mt-2 group">
@@ -233,11 +228,8 @@ export default function Home() {
                       checked={gameSettings[item.value]}
                       onChange={() => toggleSetting(item.value)}
                     />
-                    <span className="relative cursor-help">
+                    <span className="relative">
                       {item.label}
-                      <div className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-gray-800 px-3 py-1 text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        {item.tooltip}
-                      </div>
                     </span>
                   </div>
                 </div>
@@ -263,8 +255,6 @@ export default function Home() {
             onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
           />
         </main>
-      )}
-
     </AdsLayout>
   );
 }
