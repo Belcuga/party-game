@@ -168,9 +168,9 @@ export default function Home() {
       existingDifficulties: existingDifficulties
     };
 
-    setLoadingQuestions(false);
     setGameState(gameState);
     router.push(`/game/${id}`);
+    setLoadingQuestions(false);
   };
 
   const removePlayer = (index: number) => {
