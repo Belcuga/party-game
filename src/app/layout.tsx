@@ -62,6 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+      <link rel="canonical" href="https://tipsytrials.com" />
+      <link rel="icon" href="/favicon.ico" />
+      <meta name="description" content="Get the party started with Tipsy Trials — a hilarious, chaotic drinking party game for friends."/>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
