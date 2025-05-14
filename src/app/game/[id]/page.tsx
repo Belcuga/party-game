@@ -345,7 +345,7 @@ export default function PlayPage() {
             <h1 className="text-2xl font-bold">Tipsy Trials</h1>
           </div>
 
-          <SettingsMenu onClose={() => {}} />
+          <SettingsMenu/>
         </div>
 
         {/* Main content */}

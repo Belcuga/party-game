@@ -8,7 +8,7 @@ import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
 import { GamePlayer, GameState } from './types/game';
 import { useGame } from './providers/GameContext';
-import { CogIcon, TrashIcon } from 'lucide-react';
+import { TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
@@ -18,7 +18,6 @@ import Button from './components/ui/Button';
 export default function Home() {
   const router = useRouter();
   const [players, setPlayers] = useState<Player[]>([]);
-    const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     const savedPlayers = localStorage.getItem('tipsyPlayers');
@@ -176,7 +175,7 @@ return (
             <img src="/logo.png" width={60} height={60} alt="Logo" />
             <h1 className="text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
-          <SettingsMenu onClose={() => setShowMenu(false)} />
+          <SettingsMenu/>
         </div>
 
         <div className="w-full max-w-md flex-1 overflow-y-auto px-4 flex flex-col">

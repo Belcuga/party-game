@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import Modal from './Modal';
 
-interface SettingsMenuProps {
-  onClose: () => void;
-}
-
-export default function SettingsMenu({ onClose }: SettingsMenuProps) {
+export default function SettingsMenu() {
   const [showMenu, setShowMenu] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
