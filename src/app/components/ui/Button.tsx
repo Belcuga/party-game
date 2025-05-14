@@ -14,7 +14,7 @@ export default function Button({ children, onClick, disabled, className }: Butto
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "px-6 py-3 rounded font-bold transition-all",
+        "px-6 py-3 rounded font-bold transition-all cursor-pointer",
         disabled
           ? "bg-gray-400 cursor-not-allowed"
           : "bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-300 hover:to-blue-400 text-white shadow-md",

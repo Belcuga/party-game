@@ -38,7 +38,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         <input
                             type="text"
                             maxLength={20}
-                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors"
+                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer"
                             placeholder="Enter player name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -49,12 +49,12 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <div>
                         <label className="block mb-2 text-white">Gender</label>
                         <select
-                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors"
+                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer"
                             value={gender}
                             onChange={(e) => setGender(e.target.value as Gender)}
                         >
-                            <option value={Gender.Male}>Male</option>
-                            <option value={Gender.Female}>Female</option>
+                            <option className='cursor-pointer' value={Gender.Male}>Male</option>
+                            <option className='cursor-pointer' value={Gender.Female}>Female</option>
                         </select>
                     </div>
 
@@ -62,14 +62,14 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <div>
                         <label className="block mb-2 text-white">What are you drinking?</label>
                         <select
-                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors"
+                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer"
                             value={drink}
                             onChange={(e) => setDrink(e.target.value as Drink)}
                         >
-                            <option value={Drink.Beer}>Beer</option>
-                            <option value={Drink.Wine}>Wine</option>
-                            <option value={Drink.Strong}>Whiskey, Vodka, or other Strong Drinks</option>
-                            <option value={Drink.None}>Nothing</option>
+                            <option className='cursor-pointer' value={Drink.Beer}>Beer</option>
+                            <option className='cursor-pointer' value={Drink.Wine}>Wine</option>
+                            <option className='cursor-pointer' value={Drink.Strong}>Whiskey, Vodka, or other Strong Drinks</option>
+                            <option className='cursor-pointer' value={Drink.None}>Nothing</option>
                         </select>
                     </div>
 
@@ -77,9 +77,9 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <div>
                         <label className="block mb-3 text-white">Are you single?</label>
                         <div className="space-y-3">
-                            <label className="flex items-center gap-3 cursor-pointer group">
+                            <label className="flex items-center gap-3 group">
                                 <div 
-                                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                                    className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
                                         single ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3]' : 'bg-[#3b1b5e]'
                                     }`}
                                     onClick={() => setSingle(true)}
@@ -92,9 +92,9 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                                     Yes - You will get spicy challenges with other players
                                 </span>
                             </label>
-                            <label className="flex items-center gap-3 cursor-pointer group">
+                            <label className="flex items-center gap-3 group">
                                 <div 
-                                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                                    className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
                                         !single ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3]' : 'bg-[#3b1b5e]'
                                     }`}
                                     onClick={() => setSingle(false)}
@@ -115,14 +115,14 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                 <div className="flex gap-3 mt-8">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors"
+                        className="flex-1 py-3 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={!name.trim()}
-                        className="flex-1 py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                        className="flex-1 py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200  cursor-pointer"
                     >
                         Add
                     </button>

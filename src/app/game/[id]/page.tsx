@@ -406,7 +406,7 @@ export default function PlayPage() {
               <div className="relative w-60">
                 <button
                   onClick={handleNext}
-                  className="w-full py-4 bg-[#00E676] hover:bg-[#00E676]/90 text-white font-medium rounded-2xl shadow-lg cursor-pointer transition-all duration-300"
+                  className="w-full py-4 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200  cursor-pointer"
                 >
                   Next
                 </button>
@@ -414,7 +414,7 @@ export default function PlayPage() {
                 {(currentPlayer?.skipCount ?? 0) > 0 && (
                   <button
                     onClick={handleSkip}
-                    className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-gray-100 hover:bg-gray-200 text-[#1b003c] font-medium rounded-xl cursor-pointer transition-all duration-300"
+                    className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer duration-300"
                   >
                     Skip
                   </button>

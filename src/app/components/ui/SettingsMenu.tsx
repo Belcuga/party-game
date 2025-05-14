@@ -17,7 +17,7 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
         onClick={() => setShowMenu((prev) => !prev)}
         className="p-2 rounded-full bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white transition-colors duration-200"
       >
-        <Settings className="w-6 h-6" />
+        <Settings className="w-6 h-6 cursor-pointer" />
       </button>
 
       {/* Dropdown */}

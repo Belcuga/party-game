@@ -171,7 +171,8 @@ return (
     <AdsLayout>
       <main className="flex flex-col items-center h-full">
         <div className="w-full flex items-center justify-between px-6 mb-6">
-          <div className="flex items-center gap-4">
+          <div className="w-8" /> {/* Spacer to maintain centering */}
+          <div className="flex items-center gap-3 cursor-pointer">
             <img src="/logo.png" width={60} height={60} alt="Logo" />
             <h1 className="text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
@@ -192,7 +193,7 @@ return (
                 <span className="text-sm font-medium truncate">{player.name}</span>
                 <button
                   onClick={() => removePlayer(i)}
-                  className="p-1.5 rounded-md bg-[#4e2a8e]/40 hover:bg-[#9156f3]/30 text-pink-300 hover:text-pink-100 transition-colors"
+                  className="p-1.5 rounded-md bg-[#4e2a8e]/40 hover:bg-[#9156f3]/30 text-pink-300 hover:text-pink-100 transition-colors cursor-pointer"
                 >
                   <TrashIcon className="h-4 w-4" />
                 </button>
@@ -213,7 +214,7 @@ return (
               {settings.map((item, index) => (
                 <div key={index} className="flex items-center justify-start gap-3 py-1 w-full">
                   <div 
-                    className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}
+                    className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 cursor-pointer ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}
                     onClick={() => toggleSetting(item.value)}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${gameSettings[item.value] ? 'translate-x-4' : 'translate-x-0'}`} />
