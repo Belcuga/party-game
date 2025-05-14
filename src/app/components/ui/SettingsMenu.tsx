@@ -1,58 +1,61 @@
 import { useState } from 'react';
 import { Settings } from 'lucide-react';
-import Modal from './Modal'; // adjust to your actual modal import
+import Modal from './Modal';
 
-export default function SettingsMenu() {
+interface SettingsMenuProps {
+  onClose: () => void;
+}
+
+export default function SettingsMenu({ onClose }: SettingsMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <div className="relative">
-      {/* Settings Icon Button */}
       <button
         onClick={() => setShowMenu((prev) => !prev)}
-        className="hover:text-gray-300 cursor-pointer"
+        className="p-2 rounded-full bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white transition-colors duration-200"
       >
-        <Settings />
+        <Settings className="w-6 h-6" />
       </button>
 
       {/* Dropdown */}
       {showMenu && (
-        <div className="absolute top-10 right-0 bg-blue-600 text-black shadow-lg rounded-lg p-2 w-48 flex flex-col gap-2 z-10">
+        <div className="absolute right-0 mt-2 w-48 py-2 bg-[#1b003c] rounded-xl border border-[#ffffff20] shadow-[0_0_20px_rgba(157,23,77,0.2)] backdrop-blur-sm z-50">
           <div
-            className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer hover:bg-gray-300"
+            className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
             onClick={() => {
               setHowToPlayOpen(true);
               setShowMenu(false);
             }}
           >
-            How to Play
+            <div className="text-white font-medium">How to Play</div>
           </div>
           <div
-            className="p-2 bg-gray-200 rounded text-sm text-center font-bold cursor-pointer hover:bg-gray-300"
+            className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
             onClick={() => {
               setContactOpen(true);
               setShowMenu(false);
             }}
           >
-            Contact Us
+            <div className="text-white font-medium">Contact Us</div>
           </div>
         </div>
       )}
 
       {/* How to Play Modal */}
       <Modal isOpen={howToPlayOpen} onClose={() => setHowToPlayOpen(false)}>
-        <div className="p-4 max-w-md mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-center">How to Play</h2>
-          <p className="mb-4 text-sm text-gray-200">
-            Add players and pick your game modes (Dirty, Challenges, etc.).<br /><br />
-            Then take turns completing fun or spicy challenges.<br /><br />
-            Keep playing as long as you want or until you get black out drunk. Have fun!
-          </p>
+        <div className="p-8 max-w-md">
+          <h2 className="text-2xl font-bold mb-6 text-center text-white">How to Play</h2>
+          <div className="space-y-4 mb-8 text-gray-200 text-center">
+            <p>Add players and pick your game modes (Spicy, Challenges, etc.)</p>
+            <p>Then take turns completing fun or spicy challenges.</p>
+            <p>Keep playing as long as you want or until you get black out drunk. Have fun!</p>
+          </div>
           <button
             onClick={() => setHowToPlayOpen(false)}
-            className="mt-4 w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+            className="w-full py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200"
           >
             Got it!
           </button>
@@ -61,15 +64,16 @@ export default function SettingsMenu() {
 
       {/* Contact Us Modal */}
       <Modal isOpen={contactOpen} onClose={() => setContactOpen(false)}>
-        <div className="p-4 max-w-md mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-center">Contact Us</h2>
-          <p className="mb-4 text-sm text-gray-200 text-center">
-            Have questions, feedback, or need support? <br /> Reach out to us at:<br />
-            <span className="font-semibold">hello@tipsytrials.com</span>
-          </p>
+        <div className="p-8 max-w-md">
+          <h2 className="text-2xl font-bold mb-6 text-center text-white">Contact Us</h2>
+          <div className="space-y-2 mb-8 text-center">
+            <p className="text-gray-200">Have questions, feedback, or need support?</p>
+            <p className="text-gray-200">Reach out to us at:</p>
+            <p className="text-white font-semibold">hello@tipsytrials.com</p>
+          </div>
           <button
             onClick={() => setContactOpen(false)}
-            className="mt-4 w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+            className="w-full py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200"
           >
             Close
           </button>

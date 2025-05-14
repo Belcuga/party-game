@@ -8,7 +8,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] text-white flex justify-center overflow-hidden">
       {/* Ads and dark background: only on lg+ */}
-      <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
+      {/* <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
         <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
           Left Ad
         </div>
@@ -27,11 +27,11 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
         <div className="w-full h-full bg-gray-800 text-white flex items-center justify-center shadow-xl rounded">
           Bottom Ad
         </div>
-      </div>
+      </div> */}
 
       {/* Main content box: lg+ version with wrapper */}
-      <div className="hidden lg:flex z-0 w-full justify-center px-[88px] pt-[130px] pb-[130px]">
-        <div className="relative bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_0_30px_#ff00cc66] rounded-2xl p-6 w-[728px] min-h-[calc(100vh-300px)] flex flex-col animate-fadeIn">
+      <div className="hidden lg:flex w-full justify-center px-[88px] py-[120px]">
+        <div className="relative bg-[#1b003c] backdrop-blur-sm border border-[#ffffff10] shadow-[0_0_20px_rgba(157,23,77,0.2)] rounded-[24px] p-6 w-[728px] h-[calc(100vh-240px)] flex flex-col animate-fadeIn overflow-hidden">
           {loading && <GlobalLoader />}
           {!loading && <>{children}</>}
         </div>
@@ -39,7 +39,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile view - direct content with background */}
       <div className="lg:hidden w-full px-4 py-6">
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl shadow-inner p-4">
+        <div className="bg-[#2D0B45] backdrop-blur-sm border border-[#ffffff10] rounded-[24px] shadow-inner p-4">
           {children}
         </div>
       </div>

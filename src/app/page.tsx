@@ -169,27 +169,21 @@ export default function Home() {
 
 return (
     <AdsLayout>
-      <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
-        <div className="absolute top-10 right-10">
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu((prev) => !prev)}
-              className="p-2 rounded-full bg-[#4e2a8e]/30 hover:bg-[#9156f3]/30 text-pink-400 hover:text-pink-100 transition"
-            >
-              <CogIcon className="w-6 h-6" strokeWidth={2.5} />
-            </button>
-            {showMenu && <SettingsMenu/>}
+      <main className="flex flex-col items-center h-full">
+        <div className="w-full flex items-center justify-between px-6 mb-6">
+          <div className="flex items-center gap-4">
+            <img src="/logo.png" width={60} height={60} alt="Logo" />
+            <h1 className="text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
+          <SettingsMenu onClose={() => setShowMenu(false)} />
         </div>
 
-        <div className="flex items-center gap-4 ml-[-20px] mb-12">
-          <img src="/logo.png" width={40} height={40} alt="Logo" />
-          <h1 className="text-4xl font-extrabold drop-shadow-lg text-center">Tipsy Trials</h1>
-        </div>
-
-        <section className="mb-8 flex flex-col items-center w-full px-4">
-          <h2 className="text-xl font-semibold mb-4">Players</h2>
-          <ul className="space-y-2 mb-6 max-h-[250px] overflow-y-auto w-full max-w-md">
+        <div className="w-full max-w-md flex-1 overflow-y-auto px-4 flex flex-col">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-semibold">Players</h2>
+          </div>
+          
+          <ul className="space-y-2 mb-6 max-h-[250px] overflow-y-auto w-full">
             {players.map((player, i) => (
               <li
                 key={i}
@@ -208,34 +202,37 @@ return (
 
           <Button
             onClick={() => setModalOpen(true)}
-            className="w-full max-w-md"
+            className="w-full mb-6"
           >
             Add Player
           </Button>
-        </section>
 
-        <div className="absolute bottom-16 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3 w-full px-4 max-w-md">
-          <div className="flex flex-col w-full">
-            <div className='font-bold mb-4 text-center text-white text-lg'>Choose Your Mode</div>
-            {settings.map((item, index) => (
-              <div key={index} className="flex items-center justify-start gap-3 py-2 w-full">
-                <div className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}>
-                  <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${gameSettings[item.value] ? 'translate-x-4' : 'translate-x-0'}`} />
+          <div className="w-full mt-auto">
+            <div className="font-bold mb-3 text-center text-white text-lg">Choose Your Mode</div>
+            <div className="space-y-1 mb-6">
+              {settings.map((item, index) => (
+                <div key={index} className="flex items-center justify-start gap-3 py-1 w-full">
+                  <div 
+                    className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}
+                    onClick={() => toggleSetting(item.value)}
+                  >
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${gameSettings[item.value] ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                  <span className="text-sm font-medium">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="text-sm font-medium">
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <Button
-            onClick={startGame}
-            disabled={players.length < 2}
-            className="w-full"
-          >
-            Start Game
-          </Button>
+            <Button
+              onClick={startGame}
+              disabled={players.length < 2}
+              className="w-full"
+            >
+              Start Game
+            </Button>
+          </div>
         </div>
 
         <AddPlayerModal
