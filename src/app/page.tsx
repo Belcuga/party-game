@@ -8,16 +8,17 @@ import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
 import { GamePlayer, GameState } from './types/game';
 import { useGame } from './providers/GameContext';
-import { TrashIcon } from 'lucide-react';
+import { CogIcon, TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
 import SettingsMenu from './components/ui/SettingsMenu';
+import Button from './components/ui/Button';
 
 export default function Home() {
   const router = useRouter();
-
   const [players, setPlayers] = useState<Player[]>([]);
+    const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     const savedPlayers = localStorage.getItem('tipsyPlayers');
@@ -50,7 +51,7 @@ export default function Home() {
     adultMode: false,
     challenges: false,
     dirtyMode: false
-  },);
+  });
   const { setGameState, setLoading } = useGame();
 
   const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
@@ -62,7 +63,6 @@ export default function Home() {
     else {
       setGameSettings((prev) => ({ ...prev, ['dirtyMode']: false }));
     }
-
   };
 
   const startGame = async () => {
@@ -112,20 +112,6 @@ export default function Home() {
         return true;
       }
     });
-
-    // Optional gender-based filtering
-    // const hasOppositeGenderSingles = players.some((p1) =>
-    //   players.some(
-    //     (p2) =>
-    //       p1.gender !== p2.gender &&
-    //       p1.gender !== 'none' &&
-    //       p2.gender !== 'none'
-    //   )
-    // );
-    //
-    // if (!hasOppositeGenderSingles) {
-    //   filteredQuestions = filteredQuestions.filter((q) => !q.question.includes('${player}'));
-    // }
 
     const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))];
 
@@ -181,80 +167,83 @@ export default function Home() {
     return [...array].sort(() => Math.random() - 0.5);
   }
 
-  return (
+return (
     <AdsLayout>
-        <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
-          <div className="absolute top-10 right-10">
-            <SettingsMenu />
-          </div>
-
-          <div className="flex items-center gap-4 ml-[-20px] mb-12">
-            <img src="/logo.png" width={40} height={40} alt="Logo" />
-            <h1 className="text-4xl font-extrabold drop-shadow-lg text-center">Tipsy Trials</h1>
-          </div>
-
-          <section className="mb-8 flex flex-col items-center">
-            <h2 className="text-xl font-semibold mb-2">Players</h2>
-            <ul className="space-y-1 mb-4 max-h-[150px] sm:max-h-[250px] overflow-y-auto">
-              {players.map((player, i) => (
-                <li key={i} className="flex items-center justify-between gap-2">
-                  <span>{player.name}</span>
-                  <button
-                    onClick={() => removePlayer(i)}
-                    className="text-red-400 hover:text-red-600"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+      <main className="flex flex-col justify-center items-center text-white mt-12 sm:mt-0">
+        <div className="absolute top-10 right-10">
+          <div className="relative">
             <button
-              onClick={() => setModalOpen(true)}
-              className="bg-green-500 px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => setShowMenu((prev) => !prev)}
+              className="p-2 rounded-full bg-[#4e2a8e]/30 hover:bg-[#9156f3]/30 text-pink-400 hover:text-pink-100 transition"
             >
-              Add Player
+              <CogIcon className="w-6 h-6" strokeWidth={2.5} />
             </button>
-          </section>
-
-          <div className="absolute bottom-16 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3">
-            <div className="flex flex-col">
-              <div className='font-bold '>Choose Your Mode</div>
-              {settings.map((item, index) => (
-                <div key={index} className="relative group">
-                  <div className="flex items-center gap-1 mt-2 group">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600 cursor-pointer"
-                      checked={gameSettings[item.value]}
-                      onChange={() => toggleSetting(item.value)}
-                    />
-                    <span className="relative">
-                      {item.label}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={startGame}
-              className={`px-6 py-3 rounded font-bold w-full ${players.length < 2 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500  hover:bg-green-600 text-white'
-                }`}>
-              Start Game
-            </button>
+            {showMenu && <SettingsMenu/>}
           </div>
-          {/* <Link
-            href="/admin"
-            className="absolute bottom-4 right-4 bg-white text-purple-700 font-semibold px-4 py-1.5 text-sm rounded-full shadow hover:bg-purple-100 transition"
+        </div>
+
+        <div className="flex items-center gap-4 ml-[-20px] mb-12">
+          <img src="/logo.png" width={40} height={40} alt="Logo" />
+          <h1 className="text-4xl font-extrabold drop-shadow-lg text-center">Tipsy Trials</h1>
+        </div>
+
+        <section className="mb-8 flex flex-col items-center w-full px-4">
+          <h2 className="text-xl font-semibold mb-4">Players</h2>
+          <ul className="space-y-2 mb-6 max-h-[250px] overflow-y-auto w-full max-w-md">
+            {players.map((player, i) => (
+              <li
+                key={i}
+                className="w-full flex items-center justify-between px-3 py-1.5 bg-white/10 rounded-lg shadow-sm"
+              >
+                <span className="text-sm font-medium truncate">{player.name}</span>
+                <button
+                  onClick={() => removePlayer(i)}
+                  className="p-1.5 rounded-md bg-[#4e2a8e]/40 hover:bg-[#9156f3]/30 text-pink-300 hover:text-pink-100 transition-colors"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <Button
+            onClick={() => setModalOpen(true)}
+            className="w-full max-w-md"
           >
-            Admin
-          </Link> */}
-          <AddPlayerModal
-            isOpen={modalOpen}
-            onClose={() => setModalOpen(false)}
-            onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
-          />
-        </main>
+            Add Player
+          </Button>
+        </section>
+
+        <div className="absolute bottom-16 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3 w-full px-4 max-w-md">
+          <div className="flex flex-col w-full">
+            <div className='font-bold mb-4 text-center text-white text-lg'>Choose Your Mode</div>
+            {settings.map((item, index) => (
+              <div key={index} className="flex items-center justify-start gap-3 py-2 w-full">
+                <div className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}>
+                  <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${gameSettings[item.value] ? 'translate-x-4' : 'translate-x-0'}`} />
+                </div>
+                <span className="text-sm font-medium">
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            onClick={startGame}
+            disabled={players.length < 2}
+            className="w-full"
+          >
+            Start Game
+          </Button>
+        </div>
+
+        <AddPlayerModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
+        />
+      </main>
     </AdsLayout>
   );
 }

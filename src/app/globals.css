@@ -29,19 +29,19 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e3a8a; /* dark blue track */
+  background: #4b0c5e; /* dark blue track */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3b82f6; /* lighter blue thumb */
+  background: #2a064e; /* lighter blue thumb */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb; /* darker on hover */
+  background: #1a0142; /* darker on hover */
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3b82f6 #1e3a8a;
+  scrollbar-color: #2a064e #4b0c5e;
 }
