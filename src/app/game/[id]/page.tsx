@@ -411,7 +411,7 @@ export default function PlayPage() {
                   Next
                 </button>
 
-                {(currentPlayer?.skipCount ?? 0) > 0 && (
+                {(currentPlayer?.skipCount ?? 0) > 0 && currentPlayer?.playerInfo.id !== '0' && (
                   <button
                     onClick={handleSkip}
                     className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer duration-300"
