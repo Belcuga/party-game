@@ -39,7 +39,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile view - direct content with background */}
       <div className="lg:hidden w-full h-screen flex justify-center items-center overflow-hidden">
-        <div className="bg-[#2D0B45] backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full max-w-[420px] h-full overflow-y-auto">
+        <div className="backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full max-w-[420px] h-full overflow-hidden">
           {children}
         </div>
       </div>

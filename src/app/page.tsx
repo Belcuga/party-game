@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { Drink, Gender, Player } from './types/player';
 import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
@@ -14,6 +13,7 @@ import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
 import SettingsMenu from './components/ui/SettingsMenu';
 import Button from './components/ui/Button';
+import Switch from './components/ui/Switch';
 
 export default function Home() {
   const router = useRouter();
@@ -54,21 +54,34 @@ export default function Home() {
   const { setGameState, setLoading } = useGame();
 
   const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
-    setGameSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-    if (key === 'dirtyMode') {
-      setGameSettings((prev) => ({ ...prev, ['adultMode']: false }));
-      setGameSettings((prev) => ({ ...prev, ['challenges']: false }));
-    }
-    else {
-      setGameSettings((prev) => ({ ...prev, ['dirtyMode']: false }));
-    }
+    setGameSettings((prev) => {
+      if (key === 'dirtyMode') {
+        if (!prev[key]) {
+          return {
+            ...prev,
+            dirtyMode: true,
+            adultMode: false,
+            challenges: false
+          };
+        }
+        return {
+          ...prev,
+          dirtyMode: false
+        };
+      } else {
+        return {
+          ...prev,
+          [key]: !prev[key],
+          dirtyMode: false
+        };
+      }
+    });
   };
 
   const startGame = async () => {
     if (players.length < 2) return;
 
     setLoading(true);
-    const id = uuid();
 
     const pageSize = 1000;
     let from = 0;
@@ -155,7 +168,7 @@ export default function Home() {
     };
 
     setGameState(gameState);
-    router.push(`/game/${id}`);
+    router.push(`/game`);
   };
 
   const removePlayer = (index: number) => {
@@ -212,15 +225,12 @@ return (
             <div className="space-y-1 mb-6">
               {settings.map((item, index) => (
                 <div key={index} className="flex items-center justify-start gap-3 py-1 w-full">
-                  <div 
-                    className={`relative w-10 h-6 flex items-center rounded-full px-1 transition-colors duration-300 cursor-pointer ${gameSettings[item.value] ? 'bg-pink-500' : 'bg-purple-700'}`}
-                    onClick={() => toggleSetting(item.value)}
-                  >
-                    <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${gameSettings[item.value] ? 'translate-x-4' : 'translate-x-0'}`} />
-                  </div>
-                  <span className="text-sm font-medium">
-                    {item.label}
-                  </span>
+                  <Switch
+                    checked={gameSettings[item.value]}
+                    onChange={() => toggleSetting(item.value)}
+                    label={item.label}
+                    size="small"
+                  />
                 </div>
               ))}
             </div>
@@ -228,7 +238,7 @@ return (
             <Button
               onClick={startGame}
               disabled={players.length < 2}
-              className="w-full"
+              className="w-full disabled:cursor-not-allowed"
             >
               Start Game
             </Button>

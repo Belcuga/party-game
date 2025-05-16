@@ -330,100 +330,98 @@ export default function PlayPage() {
 
   return (
     <AdsLayout>
-      <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4">
-        {/* Top: Back + Settings */}
-        <div className="flex justify-between items-center w-full mb-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
-          >
-            <ArrowLeft />
-          </button>
+      <main className="flex flex-col items-center h-full">
+        <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4 ">
+          {/* Top: Back + Settings */}
+          <div className="flex justify-between items-center w-full mb-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
+            >
+              <ArrowLeft />
+            </button>
 
-          <div className="flex items-center gap-2 ml-[-20px] cursor-pointer">
-            <img src="/logo.png" width={40} height={40} alt="Logo" />
-            <h1 className="text-2xl font-bold">Tipsy Trials</h1>
-          </div>
-
-          <SettingsMenu/>
-        </div>
-
-        {/* Main content */}
-        <div className="flex flex-col items-center w-full flex-1">
-
-          <h2 className="text-xl mb-4">
-            {`${currentPlayer?.playerInfo.id === '0'
-              ? currentPlayer?.playerInfo.name + '\''
-              : currentPlayer?.playerInfo.name + '\'s'
-              } Turn`}
-          </h2>
-
-          {/* Question */}
-          <div className="bg-white rounded-3xl shadow-lg w-full mb-6">
-            <div className="p-6">
-              <p className="text-[#1b003c] text-lg font-medium mb-4">{questionText}</p>
-              <div className="text-[#1b003c] space-y-1.5">{showNumberOfSips()}</div>
+            <div className="flex items-center gap-2 ml-[-20px] cursor-pointer">
+              <img src="/logo.png" width={40} height={40} alt="Logo" />
+              <h1 className="text-2xl font-bold">Tipsy Trials</h1>
             </div>
+
+            <SettingsMenu />
           </div>
 
-          {/* Action buttons - Fixed at bottom */}
-          <div className="fixed inset-x-0 bottom-16 bg-gradient-to-t from-[#1b003c] via-[#1b003c]/80 to-transparent pb-8 pt-12">
-            <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4">
-              <div className="flex justify-center gap-10 mb-2">
-                <button
-                  onClick={() => handleVote('dislike')}
-                  disabled={votedType !== null}
-                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${
-                    votedType === 'dislike'
-                      ? 'bg-red-500 scale-110 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                    } ${
-                      votedType !== null && votedType !== 'dislike'
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
-                >
-                  <ThumbsDown className={votedType === 'dislike' ? 'text-white' : 'text-[#1b003c]'} />
-                </button>
+          {/* Main content */}
+          <div className="flex flex-col items-center w-full flex-1">
 
-                <button
-                  onClick={() => handleVote('like')}
-                  disabled={votedType !== null}
-                  className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${
-                    votedType === 'like'
-                      ? 'bg-[#00E676] scale-110 shadow-[0_0_15px_rgba(0,230,118,0.5)]'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                    } ${
-                      votedType !== null && votedType !== 'like'
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
-                >
-                  <ThumbsUp className={votedType === 'like' ? 'text-white' : 'text-[#1b003c]'} />
-                </button>
+            <h2 className="text-xl mb-4">
+              {`${currentPlayer?.playerInfo.id === '0'
+                ? currentPlayer?.playerInfo.name + '\''
+                : currentPlayer?.playerInfo.name + '\'s'
+                } Turn`}
+            </h2>
+
+            {/* Question */}
+            <div className="bg-white rounded-3xl shadow-lg w-full mb-6">
+              <div className="p-6">
+                <p className="text-[#1b003c] text-lg font-medium mb-4">{questionText}</p>
+                <div className="text-[#1b003c] space-y-1.5">{showNumberOfSips()}</div>
               </div>
+            </div>
 
-              <div className="relative w-60">
-                <button
-                  onClick={handleNext}
-                  className="w-full py-4 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200  cursor-pointer"
-                >
-                  Next
-                </button>
-
-                {(currentPlayer?.skipCount ?? 0) > 0 && currentPlayer?.playerInfo.id !== '0' && (
+            {/* Action buttons - Fixed at bottom */}
+            <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-[#1b003c] via-[#1b003c] to-transparent pb-24 pt-12 min-h-[200px]">
+              <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4">
+                <div className="flex justify-center gap-10 mb-2">
                   <button
-                    onClick={handleSkip}
-                    className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer duration-300"
+                    onClick={() => handleVote('dislike')}
+                    disabled={votedType !== null}
+                    className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${votedType === 'dislike'
+                        ? 'bg-red-500 scale-110 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                      } ${votedType !== null && votedType !== 'dislike'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                      }`}
                   >
-                    Skip
+                    <ThumbsDown className={votedType === 'dislike' ? 'text-white' : 'text-[#1b003c]'} />
                   </button>
-                )}
+
+                  <button
+                    onClick={() => handleVote('like')}
+                    disabled={votedType !== null}
+                    className={`w-12 h-12 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${votedType === 'like'
+                        ? 'bg-[#00E676] scale-110 shadow-[0_0_15px_rgba(0,230,118,0.5)]'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                      } ${votedType !== null && votedType !== 'like'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                      }`}
+                  >
+                    <ThumbsUp className={votedType === 'like' ? 'text-white' : 'text-[#1b003c]'} />
+                  </button>
+                </div>
+
+                <div className="relative w-60">
+                  <button
+                    onClick={handleNext}
+                    className="w-full py-4 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200  cursor-pointer"
+                  >
+                    Next
+                  </button>
+
+                  {(currentPlayer?.skipCount ?? 0) > 0 && currentPlayer?.playerInfo.id !== '0' && (
+                    <button
+                      onClick={handleSkip}
+                      className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer duration-300"
+                    >
+                      Skip
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </AdsLayout>
   );
 }

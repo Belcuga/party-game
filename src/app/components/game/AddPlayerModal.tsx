@@ -4,6 +4,7 @@ import { Drink, Gender, Player } from '@/app/types/player';
 import { v4 as uuid } from 'uuid';
 import { useState } from 'react';
 import Modal from '../ui/Modal';
+import Switch from '../ui/Switch';
 
 interface Props {
     isOpen: boolean;
@@ -38,7 +39,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         <input
                             type="text"
                             maxLength={20}
-                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer"
+                            className="w-full px-4 py-2 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors"
                             placeholder="Enter player name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -77,36 +78,20 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     <div>
                         <label className="block mb-3 text-white">Are you single?</label>
                         <div className="space-y-3">
-                            <label className="flex items-center gap-3 group">
-                                <div 
-                                    className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                                        single ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3]' : 'bg-[#3b1b5e]'
-                                    }`}
-                                    onClick={() => setSingle(true)}
-                                >
-                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
-                                        single ? 'left-7' : 'left-1'
-                                    }`} />
-                                </div>
-                                <span className="text-white group-hover:text-gray-300 transition-colors">
-                                    Yes - You will get spicy challenges with other players
-                                </span>
-                            </label>
-                            <label className="flex items-center gap-3 group">
-                                <div 
-                                    className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                                        !single ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3]' : 'bg-[#3b1b5e]'
-                                    }`}
-                                    onClick={() => setSingle(false)}
-                                >
-                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
-                                        !single ? 'left-7' : 'left-1'
-                                    }`} />
-                                </div>
-                                <span className="text-white group-hover:text-gray-300 transition-colors">
-                                    No - You will not get spicy challenges with other players
-                                </span>
-                            </label>
+                            <Switch
+                                type="radio"
+                                checked={single}
+                                onChange={() => setSingle(true)}
+                                label="Yes - You will get spicy challenges with other players"
+                                size="large"
+                            />
+                            <Switch
+                                type="radio"
+                                checked={!single}
+                                onChange={() => setSingle(false)}
+                                label="No - You will not get spicy challenges with other players"
+                                size="large"
+                            />
                         </div>
                     </div>
                 </div>
