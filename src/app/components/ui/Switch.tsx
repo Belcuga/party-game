@@ -8,7 +8,7 @@ interface SwitchProps {
   size?: 'small' | 'large';
 }
 
-export default function Switch({ checked, onChange, label, type = 'toggle', size = 'small' }: SwitchProps) {
+export default function Switch({ checked, onChange, label, size = 'small' }: SwitchProps) {
   const sizeClasses = size === 'small' 
     ? {
         switch: 'w-10 h-6 p-0.5',
