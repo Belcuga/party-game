@@ -341,7 +341,7 @@ export default function PlayPage() {
               <ArrowLeft />
             </button>
 
-            <div className="flex items-center gap-2 ml-[-20px] cursor-pointer">
+            <div className="flex items-center gap-2 ml-[-20px]">
               <img src="/logo.png" width={40} height={40} alt="Logo" />
               <h1 className="text-2xl font-bold">Tipsy Trials</h1>
             </div>

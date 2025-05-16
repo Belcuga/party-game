@@ -184,7 +184,7 @@ return (
       <main className="flex flex-col items-center h-full">
         <div className="w-full flex items-center justify-between px-6 mb-6">
           <div className="w-8" /> {/* Spacer to maintain centering */}
-          <div className="flex items-center gap-3 cursor-pointer">
+          <div className="flex items-center gap-3">
             <img src="/logo.png" width={60} height={60} alt="Logo" />
             <h1 className="text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
