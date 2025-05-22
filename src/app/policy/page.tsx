@@ -2,7 +2,6 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import AdsLayout from '../components/ad-layout/AdsLayout';
 
 export default function PolicyPage() {
   const router = useRouter();
