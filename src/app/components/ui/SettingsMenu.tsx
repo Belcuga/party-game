@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import Modal from './Modal';
+import Link from 'next/link';
 
 export default function SettingsMenu() {
   const [showMenu, setShowMenu] = useState(false);
@@ -37,6 +38,13 @@ export default function SettingsMenu() {
           >
             <div className="text-white font-medium">Contact Us</div>
           </div>
+          <Link
+            href="/policy"
+            className="block px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
+            onClick={() => setShowMenu(false)}
+          >
+            <div className="text-white font-medium">Privacy Policy</div>
+          </Link>
         </div>
       )}
 
