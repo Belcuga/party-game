@@ -1,10 +1,6 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
 export default function PolicyPage() {
-  const router = useRouter();
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
