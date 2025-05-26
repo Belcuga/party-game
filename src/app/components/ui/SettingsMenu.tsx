@@ -39,7 +39,7 @@ export default function SettingsMenu() {
             <div className="text-white font-medium">Contact Us</div>
           </div>
           <Link
-            href="/policy"
+            href="/policy-web"
             className="block px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
             onClick={() => setShowMenu(false)}
           >

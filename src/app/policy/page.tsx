@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 
 export default function PolicyPage() {
   const router = useRouter();
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 
   return (
@@ -16,10 +16,8 @@ export default function PolicyPage() {
       <main className="flex flex-col h-screen max-w-4xl mx-auto">
         <div className="w-full flex items-center justify-between px-6 py-4">
           <button
-            onClick={() => router.back()}
             className="flex items-center gap-2 hover:text-gray-300 cursor-pointer text-white"
           >
-            <ArrowLeft size={24} />
           </button>
           <div className="flex items-center gap-3">
             <img src="/logo.png" width={48} height={48} alt="Logo" />
@@ -48,40 +46,44 @@ export default function PolicyPage() {
                 <li>Names</li>
                 <li>Email addresses</li>
                 <li>Device identifiers</li>
-                <li>Location data</li>
-                <li>Gameplay statistics</li>
               </ul>
               <p className="text-gray-300">
+                While the game may store local gameplay statistics or progress on your device, this information is kept solely on your device and is not transmitted to us or any third parties.
                 The game is played locally on a single device and does not require login or account creation.
               </p>
             </div>
 
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">2. Third-Party Services</h2>
+              <h2 className="text-xl font-semibold text-white">2. Internet Connection Requirement</h2>
               <p className="text-gray-300">
-                Our app does not use any third-party services such as analytics tools, ad networks, 
-                or external SDKs that could collect user information.
+                While the game is played locally and does not require account creation, an internet connection is required to fetch game questions. These requests are made solely to deliver game content and do not transmit personal data or device information to us or any third parties.
               </p>
             </div>
 
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">3. Content Disclaimer</h2>
+              <h2 className="text-xl font-semibold text-white">3. Third-Party Services</h2>
               <p className="text-gray-300">
-                The game may include mature or explicit content not suitable for all audiences. 
-                Players must be of legal drinking age in their country or region to use this app.
+                Our app does not use any third-party services such as analytics tools, ad networks, or external SDKs that could collect user information.
               </p>
             </div>
 
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">4. Changes to This Privacy Policy</h2>
+              <h2 className="text-xl font-semibold text-white">4. Content Disclaimer</h2>
               <p className="text-gray-300">
-                We may update this Privacy Policy from time to time. Any changes will be posted here 
-                and take effect immediately.
+                The game may include mature or explicit content not suitable for all audiences. Players must be of legal drinking age in their country or region to use this app.
+              </p>
+            </div>
+
+            
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold text-white">5. Changes to This Privacy Policy</h2>
+              <p className="text-gray-300">
+                We may update this Privacy Policy from time to time. Any changes will be posted here and take effect immediately.
               </p>
             </div>
 
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">5. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-white">6. Contact Us</h2>
               <p className="text-gray-300">
                 If you have any questions or concerns, feel free to contact us at:
               </p>
