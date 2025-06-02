@@ -114,7 +114,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
                     </label>
                     <label className="flex items-center gap-2">
                         <input type="checkbox" checked={allPlayers} onChange={() => setAllPlayers(!allPlayers)} />
-                        All players
+                        All Players
                     </label>
                 </div>
 

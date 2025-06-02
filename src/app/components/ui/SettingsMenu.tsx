@@ -12,7 +12,7 @@ export default function SettingsMenu() {
     <div className="relative">
       <button
         onClick={() => setShowMenu((prev) => !prev)}
-        className="p-2 rounded-full bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white transition-colors duration-200"
+        className="flex items-center gap-2 hover:text-gray-300 cursor-pointer text-white"
       >
         <Settings className="w-6 h-6 cursor-pointer" />
       </button>
@@ -61,7 +61,7 @@ export default function SettingsMenu() {
             onClick={() => setHowToPlayOpen(false)}
             className="w-full py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200"
           >
-            Got it!
+            Got it
           </button>
         </div>
       </Modal>
@@ -73,13 +73,13 @@ export default function SettingsMenu() {
           <div className="space-y-2 mb-8 text-center">
             <p className="text-gray-200">Have questions, feedback, or need support?</p>
             <p className="text-gray-200">Reach out to us at:</p>
-            <p className="text-white font-semibold">hello@tipsytrials.com</p>
+            <a className="text-white font-semibold" href="mailto:hello@tipsytrials.com">hello@tipsytrials.com</a>
           </div>
           <button
             onClick={() => setContactOpen(false)}
             className="w-full py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200"
           >
-            Close
+            Got It
           </button>
         </div>
       </Modal>

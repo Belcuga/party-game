@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Logo from '../components/ui/logo';
 
 export default function PolicyPage() {
     const router = useRouter();
@@ -22,7 +23,7 @@ export default function PolicyPage() {
                         <ArrowLeft size={24} />
                     </button>
                     <div className="flex items-center gap-3">
-                        <img src="/logo.png" width={48} height={48} alt="Logo" />
+                        <Logo />
                         <h1 className="text-3xl font-bold text-white">Tipsy Trials</h1>
                     </div>
                     <div className="w-8" /> {/* Spacer to maintain centering */}

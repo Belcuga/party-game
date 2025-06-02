@@ -14,6 +14,7 @@ import { Question } from './types/question';
 import SettingsMenu from './components/ui/SettingsMenu';
 import Button from './components/ui/Button';
 import Switch from './components/ui/Switch';
+import Logo from './components/ui/logo';
 
 export default function Home() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function Home() {
     challenges: false,
     dirtyMode: false
   });
-  const { setGameState, setLoading } = useGame();
+  const { gameState, setGameState, setLoading } = useGame();
 
   const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
     setGameSettings((prev) => {
@@ -144,7 +145,7 @@ export default function Home() {
     initializedPlayers.push({
       playerInfo: {
         id: String(0),
-        name: 'All players',
+        name: 'All Players',
         gender: Gender.None,
         drink: Drink.None,
         single: false,
@@ -163,7 +164,6 @@ export default function Home() {
       currentPlayerId: null,
       currentQuestion: null,
       roundNumber: 1,
-      bonusReady: false,
       existingDifficulties: existingDifficulties
     };
 
@@ -172,30 +172,84 @@ export default function Home() {
   };
 
   const removePlayer = (index: number) => {
-    setPlayers((prev) => prev.filter((_, i) => i !== index));
+    setPlayers((prev) => {
+      const removedPlayer = prev[index];
+
+      if (!gameState) {
+        return prev.filter((_, i) => i !== index);
+      }
+
+      const updatedPlayers = gameState.players.filter(
+        (p) => p.playerInfo.id !== removedPlayer.id
+      );
+
+      // Explicitly define all fields required by GameState
+      const updatedGameState: GameState = {
+        players: updatedPlayers,
+        questions: gameState.questions ?? [],
+        answeredQuestionIds: gameState.answeredQuestionIds ?? [],
+        roundPlayersLeft: [],
+        currentPlayerId: '0',
+        currentQuestion: gameState.currentQuestion ?? null,
+        roundNumber: gameState.roundNumber ?? 1,
+        existingDifficulties: gameState.existingDifficulties ?? [],
+      };
+      setGameState(updatedGameState);
+      return prev.filter((_, i) => i !== index);
+    });
   };
+
+  const updatePlayers = (player: Player) => {
+    setPlayers((prev) => {
+      if (!gameState) {
+        return [...prev, player];
+      }
+      const gamePlayer = {
+        playerInfo: player,
+        skipCount: 1,
+        difficultyQueue: [],
+        difficultyIndex: 0,
+        totalQuestionsAnswered: 0
+      };
+      const updatedPlayers = [...gameState.players, gamePlayer]
+
+      const updatedGameState: GameState = {
+        players: updatedPlayers,
+        questions: gameState.questions ?? [], // fallback if undefined
+        answeredQuestionIds: gameState.answeredQuestionIds ?? [],
+        roundPlayersLeft: gameState.roundPlayersLeft,
+        currentPlayerId: gameState.currentPlayerId,
+        currentQuestion: gameState.currentQuestion ?? null,
+        roundNumber: gameState.roundNumber ?? 1, // adjust fallback if needed
+        existingDifficulties: gameState.existingDifficulties ?? [],
+      };
+
+      setGameState(updatedGameState);
+      return [...prev, player];
+    })
+  }
 
   function shuffleArray<T>(array: T[]): T[] {
     return [...array].sort(() => Math.random() - 0.5);
   }
 
-return (
+  return (
     <AdsLayout>
-      <main className="flex flex-col items-center h-full">
+      <main className="flex flex-col items-start sm:items-center h-full">
         <div className="w-full flex items-center justify-between px-6 mb-6">
-          <div className="w-8" /> {/* Spacer to maintain centering */}
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" width={60} height={60} alt="Logo" />
-            <h1 className="text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
+          <div className="hidden sm:block w-8" /> {/* Spacer to maintain centering */}
+          <div className="flex items-center gap-2">
+            <Logo/>
+            <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
-          <SettingsMenu/>
+          <SettingsMenu />
         </div>
 
         <div className="w-full max-w-md flex-1 overflow-y-auto px-4 flex flex-col">
           <div className="text-center mb-4">
             <h2 className="text-xl font-semibold">Players</h2>
           </div>
-          
+
           <ul className="space-y-2 mb-6 max-h-[250px] overflow-y-auto w-full">
             {players.map((player, i) => (
               <li
@@ -217,7 +271,7 @@ return (
             onClick={() => setModalOpen(true)}
             className="w-full mb-6"
           >
-            Add Player
+            Add a Player
           </Button>
 
           <div className="w-full mt-auto">
@@ -242,13 +296,17 @@ return (
             >
               Start Game
             </Button>
+
           </div>
+          {players.length < 2 && (
+            <p className="text-red-500">Must have 2 players to start the game.</p>
+          )}
         </div>
 
         <AddPlayerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
-          onAdd={(player: Player) => setPlayers((prev) => [...prev, player])}
+          onAdd={(player: Player) => updatePlayers(player)}
         />
       </main>
     </AdsLayout>

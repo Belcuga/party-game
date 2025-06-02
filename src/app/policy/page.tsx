@@ -1,5 +1,7 @@
 'use client';
 
+import Logo from "../components/ui/logo";
+
 export default function PolicyPage() {
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
@@ -16,7 +18,7 @@ export default function PolicyPage() {
           >
           </button>
           <div className="flex items-center gap-3">
-            <img src="/logo.png" width={48} height={48} alt="Logo" />
+            <Logo />
             <h1 className="text-3xl font-bold text-white">Tipsy Trials</h1>
           </div>
           <div className="w-8" /> {/* Spacer to maintain centering */}

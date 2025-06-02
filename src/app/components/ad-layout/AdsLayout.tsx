@@ -2,11 +2,39 @@
 
 import { useGame } from "@/app/providers/GameContext";
 import GlobalLoader from "../ui/GlobalLoader";
+import { useEffect, useState } from "react";
 
 export default function AdsLayout({ children }: { children: React.ReactNode }) {
   const { loading } = useGame();
+  const [isLandscape, setIsLandscape] = useState(false);
+
+  useEffect(() => {
+    const handleOrientation = () => {
+      const isNowLandscape = window.matchMedia("(orientation: landscape)").matches;
+      const isMobile = window.innerHeight <= 440;
+      setIsLandscape(isNowLandscape && isMobile);
+      
+      console.log(isLandscape);
+    };
+
+    handleOrientation(); // Initial check
+    window.addEventListener("resize", handleOrientation);
+    window.addEventListener("orientationchange", handleOrientation);
+
+    return () => {
+      window.removeEventListener("resize", handleOrientation);
+      window.removeEventListener("orientationchange", handleOrientation);
+    };
+  }, []);
+
   return (
+
     <div className="relative min-h-screen bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] text-white flex justify-center overflow-hidden">
+            {isLandscape && (
+        <div className="fixed inset-0 bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] bg-opacity-90 text-white text-2xl flex items-center justify-center z-50">
+          Please rotate your device back to portrait mode.
+        </div>
+      )}
       {/* Ads and dark background: only on lg+ */}
       {/* <div className="hidden lg:flex fixed left-4 top-0 h-screen w-[160px] items-center justify-center z-10">
         <div className="w-[160px] h-[600px] bg-gray-700 text-white flex items-center justify-center shadow-xl rounded">
@@ -39,7 +67,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile view - direct content with background */}
       <div className="lg:hidden w-full h-screen flex justify-center items-center overflow-hidden">
-        <div className="backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full max-w-[420px] h-full overflow-hidden">
+        <div className="backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full h-full overflow-hidden">
           {loading && <GlobalLoader />}
           {!loading && <>{children}</>}
         </div>

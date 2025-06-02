@@ -10,6 +10,7 @@ import { GameState } from '@/app/types/game';
 import AdsLayout from '@/app/components/ad-layout/AdsLayout';
 import { Question } from '@/app/types/question';
 import SettingsMenu from '@/app/components/ui/SettingsMenu';
+import Logo from '../components/ui/logo';
 
 export default function PlayPage() {
   const router = useRouter();
@@ -243,9 +244,9 @@ export default function PlayPage() {
     if (gameState?.currentQuestion?.all_players) {
       const punishment = gameState.currentQuestion.punishment ?? 0;
       const sips = [
-        `Beer drinker - take ${Math.ceil(punishment * 1.5)} sips`,
-        `Wine drinker - take ${punishment * 1} sips`,
-        `Strong drinks - take ${Math.ceil(punishment * 0.5)} sips`,
+        `Beer drinker - take ${Math.ceil(punishment * 1.5)} ${Math.ceil(punishment * 1.5) === 1 ? 'sip' : 'sips'}`,
+        `Wine drinker - take ${punishment * 1} ${Math.ceil(punishment * 1.5) === 1 ? 'sip' : 'sips'}`,
+        `Strong drinks - take ${Math.ceil(punishment * 0.5)} ${Math.ceil(punishment * 1.5) === 1 ? 'sip' : 'sips'}`,
       ];
 
       if (gameState.currentQuestion.question.includes('Everyone')) {
@@ -269,8 +270,8 @@ export default function PlayPage() {
             : 0.5;
       const sips = Math.ceil((gameState?.currentQuestion?.punishment ?? 0) * multiplier);
       return (
-        <p className="leading-tight text-left font-semibold">
-          Answer or Take {sips} Sips
+        <p className="leading-tight text-middle font-semibold">
+          {gameState?.currentQuestion?.challenge ? 'Do' : 'Answer'} or Take {sips} {sips === 1 ? 'sip' : 'sips'}
         </p>
       );
     }
@@ -331,31 +332,31 @@ export default function PlayPage() {
   return (
     <AdsLayout>
       <main className="flex flex-col items-center h-full">
-        <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4 ">
-          {/* Top: Back + Settings */}
-          <div className="flex justify-between items-center w-full mb-4">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
-            >
-              <ArrowLeft />
-            </button>
+        <div className="w-full flex items-center justify-between px-6 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
+          >
+            <ArrowLeft />
+          </button>
 
-            <div className="flex items-center gap-2 ml-[-20px]">
-              <img src="/logo.png" width={40} height={40} alt="Logo" />
-              <h1 className="text-2xl font-bold">Tipsy Trials</h1>
-            </div>
-
-            <SettingsMenu />
+          <div className="flex items-center gap-2">
+            <Logo/>
+            <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
 
+          <SettingsMenu />
+        </div>
+
+        <div className="flex flex-col justify-between items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-4 ">
           {/* Main content */}
           <div className="flex flex-col items-center w-full flex-1">
 
             <h2 className="text-xl mb-4">
+              <b className='font-bold text-2xl'>{currentPlayer?.playerInfo.name}</b>
               {`${currentPlayer?.playerInfo.id === '0'
-                ? currentPlayer?.playerInfo.name + '\''
-                : currentPlayer?.playerInfo.name + '\'s'
+                ? '\''
+                : '\'s'
                 } Turn`}
             </h2>
 
@@ -413,7 +414,7 @@ export default function PlayPage() {
                       onClick={handleSkip}
                       className="absolute left-1/2 -translate-x-1/2 -bottom-16 w-20 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors cursor-pointer duration-300"
                     >
-                      Skip
+                      Skip ({currentPlayer?.skipCount})
                     </button>
                   )}
                 </div>
