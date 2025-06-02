@@ -19,7 +19,7 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
     const [drink, setDrink] = useState<Drink>(Drink.Beer);
     const [single, setSingle] = useState<boolean>(true);
     const { gameState } = useGame();
-    let [duplicateName, setDuplicateName] = useState<boolean>(false);
+    const [duplicateName, setDuplicateName] = useState<boolean>(false);
 
     const handleSubmit = () => {
         if (name.trim()) {
