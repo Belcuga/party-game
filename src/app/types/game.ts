@@ -4,9 +4,8 @@ import { Question } from "./question";
 export type GamePlayer = {
     playerInfo: Player;
     skipCount: number;
-    difficultyQueue: number[];   // 4 difficulties shuffled
-    difficultyIndex: number;     // where in difficultyQueue they currently are
-    totalQuestionsAnswered: number; // counts questions for bonus round + skip bonus
+    totalQuestionsAnswered: number; // times this player chose "I Answered" instead of drinking
+    drankCount: number;             // times this player chose "I Took the Sip(s)" instead of answering
 };
 
 export type GameState = {
@@ -18,6 +17,9 @@ export type GameState = {
     currentQuestion: Question | null;
     roundNumber: number;
     existingDifficulties: number[];
+    tableDifficultyIndex: number;   // index into existingDifficulties (sorted ascending), shared by the whole table
+    pendingDifficultyBoost: boolean; // set by the "Turn Up The Heat" button; consumed at the next round transition
+    punishmentRouletteEnabled: boolean; // Game Options toggle
 };
 
  export type GameContextType = {

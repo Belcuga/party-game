@@ -5,40 +5,55 @@ import { v4 as uuid } from 'uuid';
 import { useEffect, useState } from 'react';
 import Modal from '../ui/Modal';
 import Switch from '../ui/Switch';
-import { useGame } from '@/app/providers/GameContext';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onAdd: (player: Player) => void;
+    onSubmit: (player: Player) => void;
+    /** Existing player names to guard against duplicates (excluding the player being edited). */
+    existingNames: string[];
+    /** When set, the modal edits this player instead of creating a new one. */
+    editingPlayer?: Player | null;
 }
 
-export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
+export default function AddPlayerModal({ isOpen, onClose, onSubmit, existingNames, editingPlayer }: Props) {
+    const isEditing = !!editingPlayer;
+
     const [name, setName] = useState('');
     const [gender, setGender] = useState<Gender>(Gender.Male);
     const [drink, setDrink] = useState<Drink>(Drink.Beer);
     const [single, setSingle] = useState<boolean>(true);
-    const { gameState } = useGame();
-    const [duplicateName, setDuplicateName] = useState<boolean>(false);
-
-    const handleSubmit = () => {
-        if (name.trim()) {
-            onAdd({ id: uuid(), name: name.trim(), gender, drink, single });
-            setName('');
-            setGender(Gender.Male);
-            onClose();
-        }
-    };
 
     useEffect(() => {
-        if (!gameState) return;
-        setDuplicateName(!!gameState?.players?.find(p => p.playerInfo.name === name))
-    }, [duplicateName, gameState, name]);
+        if (!isOpen) return;
+        if (editingPlayer) {
+            setName(editingPlayer.name);
+            setGender(editingPlayer.gender === Gender.None ? Gender.Male : editingPlayer.gender);
+            setDrink(editingPlayer.drink === Drink.None ? Drink.Beer : editingPlayer.drink);
+            setSingle(editingPlayer.single ?? true);
+        } else {
+            setName('');
+            setGender(Gender.Male);
+            setDrink(Drink.Beer);
+            setSingle(true);
+        }
+    }, [isOpen, editingPlayer]);
+
+    const trimmedName = name.trim();
+    const duplicateName = existingNames.some(
+        (n) => n.toLowerCase() === trimmedName.toLowerCase() && n.toLowerCase() !== editingPlayer?.name.toLowerCase()
+    );
+
+    const handleSubmit = () => {
+        if (!trimmedName || duplicateName) return;
+        onSubmit({ id: editingPlayer?.id ?? uuid(), name: trimmedName, gender, drink, single });
+        onClose();
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <div className="p-8 w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center text-white">Add a Player</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center text-white">{isEditing ? 'Edit Player' : 'Add a Player'}</h2>
 
                 <div className="space-y-6">
                     {/* Name input */}
@@ -59,40 +74,67 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                         </div>
                     </div>
 
-                    {/* Gender select */}
-                    <div className="relative w-full">
+                    {/* Gender picker */}
+                    <div className="w-full">
                         <label className="block mb-2 text-white">Gender</label>
-                        <select
-                            className="w-full px-4 py-2 pr-10 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer appearance-none"
-                            value={gender}
-                            onChange={(e) => setGender(e.target.value as Gender)}
-                        >
-                            <option value={Gender.Male}>Male</option>
-                            <option value={Gender.Female}>Female</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center -bottom-8">
-                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setGender(Gender.Male)}
+                                className={`flex-1 py-2.5 rounded-lg font-bold text-sm cursor-pointer transition-all ${gender === Gender.Male
+                                        ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3] text-white'
+                                        : 'bg-[#3b1b5e] text-white/70 hover:text-white'
+                                    }`}
+                            >
+                                Male
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setGender(Gender.Female)}
+                                className={`flex-1 py-2.5 rounded-lg font-bold text-sm cursor-pointer transition-all ${gender === Gender.Female
+                                        ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3] text-white'
+                                        : 'bg-[#3b1b5e] text-white/70 hover:text-white'
+                                    }`}
+                            >
+                                Female
+                            </button>
                         </div>
                     </div>
 
-                    {/* Drink select */}
-                    <div className="relative w-full">
+                    {/* Drink picker */}
+                    <div className="w-full">
                         <label className="block mb-2 text-white">What are you drinking?</label>
-                        <select
-                            className="w-full px-4 py-2 pr-10 rounded-lg bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors cursor-pointer appearance-none"
-                            value={drink}
-                            onChange={(e) => setDrink(e.target.value as Drink)}
-                        >
-                            <option className='cursor-pointer' value={Drink.Beer}>Beer</option>
-                            <option className='cursor-pointer' value={Drink.Wine}>Wine</option>
-                            <option className='cursor-pointer' value={Drink.Strong}>Whiskey, Vodka, or other Strong Drinks</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center -bottom-8">
-                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setDrink(Drink.Beer)}
+                                className={`flex-1 py-2.5 rounded-lg font-bold text-sm cursor-pointer transition-all ${drink === Drink.Beer
+                                        ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3] text-white'
+                                        : 'bg-[#3b1b5e] text-white/70 hover:text-white'
+                                    }`}
+                            >
+                                Beer
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDrink(Drink.Wine)}
+                                className={`flex-1 py-2.5 rounded-lg font-bold text-sm cursor-pointer transition-all ${drink === Drink.Wine
+                                        ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3] text-white'
+                                        : 'bg-[#3b1b5e] text-white/70 hover:text-white'
+                                    }`}
+                            >
+                                Wine
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDrink(Drink.Strong)}
+                                className={`flex-1 py-2.5 rounded-lg font-bold text-sm cursor-pointer transition-all ${drink === Drink.Strong
+                                        ? 'bg-gradient-to-r from-[#00E676] to-[#2196F3] text-white'
+                                        : 'bg-[#3b1b5e] text-white/70 hover:text-white'
+                                    }`}
+                            >
+                                Strong
+                            </button>
                         </div>
                     </div>
 
@@ -128,10 +170,10 @@ export default function AddPlayerModal({ isOpen, onClose, onAdd }: Props) {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={!name.trim() || duplicateName}
+                        disabled={!trimmedName || duplicateName}
                         className="flex-1 py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200  cursor-pointer"
                     >
-                        Add
+                        {isEditing ? 'Save' : 'Add'}
                     </button>
                 </div>
             </div>

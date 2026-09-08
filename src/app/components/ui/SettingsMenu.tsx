@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import Modal from './Modal';
+import FeedbackModal from './FeedbackModal';
 import Link from 'next/link';
 
 export default function SettingsMenu() {
   const [showMenu, setShowMenu] = useState(false);
-  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <div className="relative">
@@ -20,15 +21,13 @@ export default function SettingsMenu() {
       {/* Dropdown */}
       {showMenu && (
         <div className="absolute right-0 mt-2 w-48 py-2 bg-[#1b003c] rounded-xl border border-[#ffffff20] shadow-[0_0_20px_rgba(157,23,77,0.2)] backdrop-blur-sm z-50">
-          <div
-            className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
-            onClick={() => {
-              setHowToPlayOpen(true);
-              setShowMenu(false);
-            }}
+          <Link
+            href="/how-to-play"
+            className="block px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
+            onClick={() => setShowMenu(false)}
           >
             <div className="text-white font-medium">How to Play</div>
-          </div>
+          </Link>
           <div
             className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
             onClick={() => {
@@ -37,6 +36,15 @@ export default function SettingsMenu() {
             }}
           >
             <div className="text-white font-medium">Contact Us</div>
+          </div>
+          <div
+            className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
+            onClick={() => {
+              setFeedbackOpen(true);
+              setShowMenu(false);
+            }}
+          >
+            <div className="text-white font-medium">Send Feedback</div>
           </div>
           <Link
             href="/policy-web"
@@ -48,32 +56,17 @@ export default function SettingsMenu() {
         </div>
       )}
 
-      {/* How to Play Modal */}
-      <Modal isOpen={howToPlayOpen} onClose={() => setHowToPlayOpen(false)}>
-        <div className="p-8 max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center text-white">How to Play</h2>
-          <div className="space-y-4 mb-8 text-gray-200 text-center">
-            <p>Add players and pick your game modes (Spicy, Challenges, etc.)</p>
-            <p>Then take turns completing fun or spicy challenges.</p>
-            <p>Keep playing as long as you want or until you get black out drunk. Have fun!</p>
-          </div>
-          <button
-            onClick={() => setHowToPlayOpen(false)}
-            className="w-full py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200"
-          >
-            Got it
-          </button>
-        </div>
-      </Modal>
-
       {/* Contact Us Modal */}
       <Modal isOpen={contactOpen} onClose={() => setContactOpen(false)}>
         <div className="p-8 max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center text-white">Contact Us</h2>
           <div className="space-y-2 mb-8 text-center">
-            <p className="text-gray-200">Have questions, feedback, or need support?</p>
+            <p className="text-gray-200">Have questions or need support?</p>
             <p className="text-gray-200">Reach out to us at:</p>
             <a className="text-white font-semibold" href="mailto:hello@tipsytrials.com">hello@tipsytrials.com</a>
+            <p className="text-gray-400 text-sm pt-2">
+              Got a bug or an idea instead? Use the Send Feedback button to send it straight to us.
+            </p>
           </div>
           <button
             onClick={() => setContactOpen(false)}
@@ -83,6 +76,8 @@ export default function SettingsMenu() {
           </button>
         </div>
       </Modal>
+
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </div>
   );
 }

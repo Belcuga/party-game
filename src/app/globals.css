@@ -45,3 +45,13 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #2a064e #4b0c5e;
 }
+
+@keyframes heatPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 64, 64, 0.35); }
+  50% { box-shadow: 0 0 24px rgba(255, 64, 64, 0.65); }
+}
+
+@keyframes statPopIn {
+  from { opacity: 0; transform: scale(0.85) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}

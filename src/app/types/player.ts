@@ -3,7 +3,8 @@ export type Player = {
     name: string;
     gender: Gender;
     drink: Drink;
-    single: boolean;
+    /** Undefined when this player was added from a mode that doesn't ask for it. */
+    single?: boolean;
 };
 
 export enum Gender {

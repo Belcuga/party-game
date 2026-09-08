@@ -5,7 +5,7 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: 'Tipsy Trials',
-  description: 'Get the party started with Tipsy Trials — a hilarious, chaotic drinking party game for friends.',
+  description: 'Get the party started with Tipsy Trials - a hilarious, chaotic drinking party game for friends.',
   keywords: ['party game', 'drinking game', 'friends', 'fun', 'questions', 'challenges', 'tipsy', 'trials'],
   icons: { icon: '/favicon.ico' },
   metadataBase: new URL('https://tipsytrials.com'),
@@ -73,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         <link rel="canonical" href="https://tipsytrials.com" />
         <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="Get the party started with Tipsy Trials — a hilarious, chaotic drinking party game for friends." />
+        <meta name="description" content="Get the party started with Tipsy Trials - a hilarious, chaotic drinking party game for friends." />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       </head>
       <body className="bg-gradient-to-br from-blue-950 to-blue-900 text-white">

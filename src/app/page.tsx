@@ -1,61 +1,63 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Drink, Gender, Player } from './types/player';
 import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
 import { GamePlayer, GameState } from './types/game';
 import { useGame } from './providers/GameContext';
-import { TrashIcon } from 'lucide-react';
 import { SettingsLabel } from './types/gameSettings';
 import AdsLayout from './components/ad-layout/AdsLayout';
 import { Question } from './types/question';
 import SettingsMenu from './components/ui/SettingsMenu';
-import Button from './components/ui/Button';
-import Switch from './components/ui/Switch';
+import HowToPlayButton from './components/ui/HowToPlayButton';
 import Logo from './components/ui/logo';
+import ModeSelect, { GAME_MODES, GameModeId } from './components/game/ModeSelect';
+import ModeLobby from './components/game/ModeLobby';
+import SimpleRoster from './components/game/SimpleRoster';
+import FullRoster from './components/game/FullRoster';
+import GameOptions from './components/game/GameOptions';
+import { startingDifficultyIndex } from './types/drunkenness';
 
 export default function Home() {
   const router = useRouter();
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [view, setView] = useState<'modes' | 'setup' | 'quickOptions' | 'gameOptions'>('modes');
+  const [selectedModeId, setSelectedModeId] = useState<GameModeId | null>(null);
+  const selectedMode = GAME_MODES.find((m) => m.id === selectedModeId) ?? null;
+  const isNameOnlyRoster = selectedMode?.rosterFields === 'name-only';
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    const savedPlayers = localStorage.getItem('tipsyPlayers');
-    if (savedPlayers) {
-      try {
-        const parsed = JSON.parse(savedPlayers);
-        if (Array.isArray(parsed)) {
-          setPlayers(parsed);
-        }
-      } catch (err) {
-        console.error('Failed to parse saved players:', err);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (players.length > 0) {
-      localStorage.setItem('tipsyPlayers', JSON.stringify(players));
-    }
-  }, [players]);
+  const handleModeContinue = () => {
+    if (!selectedMode) return;
+    setView(selectedMode.needsRoster ? 'setup' : 'quickOptions');
+  };
 
   const settings: SettingsLabel[] = [
-    { label: 'Include Spicy Questions (18+)', tooltip: 'Include dirty questions', value: 'adultMode' },
-    { label: 'Include Challenges', tooltip: 'Include physical or action-based challenges', value: 'challenges' },
-    { label: 'Only Spicy Stuff (18+)', tooltip: 'Dirty questions and challenges only', value: 'dirtyMode' },
+    { label: 'Include Spicy Questions (18+)', tooltip: 'Mixes in 18+ questions alongside the regular ones.', value: 'adultMode' },
+    { label: 'Include Challenges', tooltip: 'Mixes in physical or action-based dares alongside regular questions.', value: 'challenges' },
+    { label: 'Only Spicy Stuff (18+)', tooltip: 'Skips everything else - every question will be 18+.', value: 'dirtyMode' },
+    { label: 'Punishment Roulette', tooltip: 'Random chance each round someone gets hit with a silly rule or instant punishment - lasts until their next turn.', value: 'punishmentRoulette' },
   ];
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [drunkenness, setDrunkenness] = useState(0);
   const [gameSettings, setGameSettings] = useState({
     adultMode: false,
     challenges: false,
-    dirtyMode: false
+    dirtyMode: false,
+    punishmentRoulette: false,
   });
-  const { gameState, setGameState, setLoading } = useGame();
+  const { gameState, setGameState, setLoading, players, setPlayers } = useGame();
 
-  const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode') => {
+  const toggleSetting = (key: 'adultMode' | 'challenges' | 'dirtyMode' | 'punishmentRoulette') => {
     setGameSettings((prev) => {
+      if (key === 'punishmentRoulette') {
+        return {
+          ...prev,
+          punishmentRoulette: !prev.punishmentRoulette,
+        };
+      }
       if (key === 'dirtyMode') {
         if (!prev[key]) {
           return {
@@ -126,7 +128,8 @@ export default function Home() {
       }
     });
 
-    const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))];
+    const existingDifficulties = [...new Set(filteredQuestions.map(q => q.difficulty))].sort((a, b) => a - b);
+    const startIndex = startingDifficultyIndex(drunkenness, existingDifficulties.length);
 
     const initializedPlayers = players.map((p) => ({
       playerInfo: {
@@ -137,9 +140,8 @@ export default function Home() {
         single: p.single
       },
       skipCount: 1,
-      difficultyQueue: shuffleArray(existingDifficulties),
-      difficultyIndex: 0,
       totalQuestionsAnswered: 0,
+      drankCount: 0,
     } as GamePlayer));
 
     initializedPlayers.push({
@@ -151,9 +153,8 @@ export default function Home() {
         single: false,
       },
       skipCount: 0,
-      difficultyQueue: [],
-      difficultyIndex: 0,
       totalQuestionsAnswered: 0,
+      drankCount: 0,
     } as GamePlayer);
 
     const gameState: GameState = {
@@ -164,7 +165,10 @@ export default function Home() {
       currentPlayerId: null,
       currentQuestion: null,
       roundNumber: 1,
-      existingDifficulties: existingDifficulties
+      existingDifficulties: existingDifficulties,
+      tableDifficultyIndex: startIndex,
+      pendingDifficultyBoost: false,
+      punishmentRouletteEnabled: gameSettings.punishmentRoulette,
     };
 
     setGameState(gameState);
@@ -193,6 +197,9 @@ export default function Home() {
         currentQuestion: gameState.currentQuestion ?? null,
         roundNumber: gameState.roundNumber ?? 1,
         existingDifficulties: gameState.existingDifficulties ?? [],
+        tableDifficultyIndex: gameState.tableDifficultyIndex ?? 0,
+        pendingDifficultyBoost: gameState.pendingDifficultyBoost ?? false,
+        punishmentRouletteEnabled: gameState.punishmentRouletteEnabled ?? false,
       };
       setGameState(updatedGameState);
       return prev.filter((_, i) => i !== index);
@@ -207,9 +214,8 @@ export default function Home() {
       const gamePlayer = {
         playerInfo: player,
         skipCount: 1,
-        difficultyQueue: [],
-        difficultyIndex: 0,
-        totalQuestionsAnswered: 0
+        totalQuestionsAnswered: 0,
+        drankCount: 0,
       };
       const updatedPlayers = [...gameState.players, gamePlayer]
 
@@ -222,6 +228,9 @@ export default function Home() {
         currentQuestion: gameState.currentQuestion ?? null,
         roundNumber: gameState.roundNumber ?? 1, // adjust fallback if needed
         existingDifficulties: gameState.existingDifficulties ?? [],
+        tableDifficultyIndex: gameState.tableDifficultyIndex ?? 0,
+        pendingDifficultyBoost: gameState.pendingDifficultyBoost ?? false,
+        punishmentRouletteEnabled: gameState.punishmentRouletteEnabled ?? false,
       };
 
       setGameState(updatedGameState);
@@ -229,9 +238,31 @@ export default function Home() {
     })
   }
 
-  function shuffleArray<T>(array: T[]): T[] {
-    return [...array].sort(() => Math.random() - 0.5);
-  }
+  const updatePlayerAt = (index: number, updated: Player) => {
+    setPlayers((prev) => {
+      const next = prev.map((p, i) => (i === index ? updated : p));
+
+      if (gameState) {
+        const updatedGameState: GameState = {
+          ...gameState,
+          players: gameState.players.map((gp) =>
+            gp.playerInfo.id === updated.id ? { ...gp, playerInfo: updated } : gp
+          ),
+        };
+        setGameState(updatedGameState);
+      }
+
+      return next;
+    });
+  };
+
+  const handlePlayerSubmit = (player: Player) => {
+    if (editingIndex !== null) {
+      updatePlayerAt(editingIndex, player);
+    } else {
+      updatePlayers(player);
+    }
+  };
 
   return (
     <AdsLayout>
@@ -242,71 +273,88 @@ export default function Home() {
             <Logo/>
             <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
-          <SettingsMenu />
+          <div className="flex items-center gap-3">
+            {view === 'setup' && selectedMode && (
+              <HowToPlayButton
+                modeName={selectedMode.name}
+                color={selectedMode.color}
+                description={selectedMode.howToPlay ?? selectedMode.tagline}
+              />
+            )}
+            <SettingsMenu />
+          </div>
         </div>
 
-        <div className="w-full max-w-md flex-1 overflow-y-auto px-4 flex flex-col">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-semibold">Players</h2>
-          </div>
+        {view === 'modes' && (
+          <ModeSelect
+            selectedModeId={selectedModeId}
+            onSelect={setSelectedModeId}
+            onContinue={handleModeContinue}
+          />
+        )}
 
-          <ul className="space-y-2 mb-6 max-h-[250px] overflow-y-auto w-full">
-            {players.map((player, i) => (
-              <li
-                key={i}
-                className="w-full flex items-center justify-between px-3 py-1.5 bg-white/10 rounded-lg shadow-sm"
-              >
-                <span className="text-sm font-medium truncate">{player.name}</span>
-                <button
-                  onClick={() => removePlayer(i)}
-                  className="p-1.5 rounded-md bg-[#4e2a8e]/40 hover:bg-[#9156f3]/30 text-pink-300 hover:text-pink-100 transition-colors cursor-pointer"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
+        {view === 'quickOptions' && selectedMode && (
+          <ModeLobby
+            mode={selectedMode}
+            spicy={gameSettings.adultMode}
+            onToggleSpicy={() => toggleSetting('adultMode')}
+            onChangeMode={() => setView('modes')}
+            onStart={() => {
+              if (selectedMode.route) router.push(`${selectedMode.route}?spicy=${gameSettings.adultMode}`);
+            }}
+          />
+        )}
 
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="w-full mb-6"
-          >
-            Add a Player
-          </Button>
+        {view === 'setup' && selectedMode && isNameOnlyRoster && (
+          <SimpleRoster
+            mode={selectedMode}
+            players={players}
+            onAdd={updatePlayers}
+            onRemove={removePlayer}
+            onChangeMode={() => setView('modes')}
+            onStart={() => {
+              if (selectedMode.route) router.push(`${selectedMode.route}?spicy=${gameSettings.adultMode}`);
+            }}
+          />
+        )}
 
-          <div className="w-full mt-auto">
-            <div className="font-bold mb-3 text-center text-white text-lg">Choose Your Mode</div>
-            <div className="space-y-1 mb-6">
-              {settings.map((item, index) => (
-                <div key={index} className="flex items-center justify-start gap-3 py-1 w-full">
-                  <Switch
-                    checked={gameSettings[item.value]}
-                    onChange={() => toggleSetting(item.value)}
-                    label={item.label}
-                    size="small"
-                  />
-                </div>
-              ))}
-            </div>
+        {view === 'setup' && selectedMode && !isNameOnlyRoster && (
+          <FullRoster
+            mode={selectedMode}
+            players={players}
+            onAddClick={() => {
+              setEditingIndex(null);
+              setModalOpen(true);
+            }}
+            onEdit={(index) => {
+              setEditingIndex(index);
+              setModalOpen(true);
+            }}
+            onRemove={removePlayer}
+            onChangeMode={() => setView('modes')}
+            onContinue={() => setView('gameOptions')}
+          />
+        )}
 
-            <Button
-              onClick={startGame}
-              disabled={players.length < 2}
-              className="w-full disabled:cursor-not-allowed"
-            >
-              Start Game
-            </Button>
-
-          </div>
-          {players.length < 2 && (
-            <p className="text-red-500">Must have 2 players to start the game.</p>
-          )}
-        </div>
+        {view === 'gameOptions' && selectedMode && (
+          <GameOptions
+            mode={selectedMode}
+            onBack={() => setView('setup')}
+            onStart={startGame}
+            settings={settings}
+            gameSettings={gameSettings}
+            onToggleSetting={toggleSetting}
+            drunkenness={drunkenness}
+            onSetDrunkenness={setDrunkenness}
+          />
+        )}
 
         <AddPlayerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
-          onAdd={(player: Player) => updatePlayers(player)}
+          onSubmit={handlePlayerSubmit}
+          existingNames={players.map((p) => p.name)}
+          editingPlayer={editingIndex !== null ? players[editingIndex] : null}
         />
       </main>
     </AdsLayout>

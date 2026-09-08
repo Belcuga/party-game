@@ -5,7 +5,7 @@
     }
 
     export type SettingsLabel = {
-        label: string, 
-        tooltip: string, 
-        value: 'adultMode' | 'challenges' | 'dirtyMode'
+        label: string,
+        tooltip: string,
+        value: 'adultMode' | 'challenges' | 'dirtyMode' | 'punishmentRoulette'
     }

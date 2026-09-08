@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/SupabaseClient';
 import { Question } from '@/app/types/question';
+import Modal from '@/app/components/ui/Modal';
 
 type Props = {
     isOpen: boolean;
@@ -11,12 +12,16 @@ type Props = {
     existingQuestion?: Question;
 };
 
+const inputClass =
+    'w-full px-4 py-2.5 rounded-xl bg-[#3b1b5e] text-white border border-[#ffffff20] focus:outline-none focus:border-[#ffffff40] transition-colors';
+
 export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQuestion }: Props) {
     const [question, setQuestion] = useState(existingQuestion?.question || '');
     const [dirty, setDirty] = useState(existingQuestion?.dirty || false);
     const [challenge, setChallenge] = useState(existingQuestion?.challenge || false);
     const [allPlayers, setAllPlayers] = useState(existingQuestion?.all_players || false);
-    const [punishment, setPunishment] = useState(existingQuestion?.punishment || 0);
+    const [needOppositeGender, setNeedOppositeGender] = useState(existingQuestion?.need_opposite_gender || false);
+    const [punishment, setPunishment] = useState(existingQuestion?.punishment || 1);
     const [difficulty, setDifficulty] = useState(existingQuestion?.difficulty || 1);
     const [saving, setSaving] = useState(false);
 
@@ -28,13 +33,15 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
             setPunishment(existingQuestion.punishment);
             setDifficulty(existingQuestion.difficulty);
             setAllPlayers(existingQuestion.all_players);
+            setNeedOppositeGender(existingQuestion.need_opposite_gender || false);
         } else {
             setQuestion('');
             setDirty(false);
             setChallenge(false);
-            setPunishment(0);
+            setPunishment(1);
             setDifficulty(1);
             setAllPlayers(false);
+            setNeedOppositeGender(false);
         }
     }, [existingQuestion]);
 
@@ -46,7 +53,6 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
         let error;
 
         if (existingQuestion) {
-            // Editing existing
             const { error: updateError } = await supabase
                 .from('questions')
                 .update({
@@ -56,6 +62,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
                     punishment,
                     difficulty,
                     all_players: allPlayers,
+                    need_opposite_gender: needOppositeGender,
                 })
                 .eq('id', existingQuestion.id);
 
@@ -71,6 +78,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
                     like_count: 0,
                     dislike_count: 0,
                     all_players: allPlayers,
+                    need_opposite_gender: needOppositeGender,
                 },
             ]);
 
@@ -87,77 +95,87 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, existingQ
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-center items-center">
-            <div className="bg-white text-black rounded-xl p-6 w-full max-w-md shadow-lg">
-                <h2 className="text-xl font-bold mb-4">➕ Add New Question</h2>
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <div className="p-8">
+                <h2 className="text-xl font-bold mb-6 text-white text-center">
+                    {existingQuestion ? 'Edit Question' : 'Add New Question'}
+                </h2>
 
                 <textarea
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="Enter your question..."
-                    className="w-full p-3 rounded border mb-4"
                     rows={4}
+                    className={`${inputClass} mb-4 resize-none`}
                 />
 
-                <div className="flex flex-col gap-2 mb-4">
-                    <label className="flex items-center gap-2">
-                        <input type="checkbox" checked={dirty} onChange={() => setDirty(!dirty)} />
-                        Dirty
-                    </label>
-
-                    <label className="flex items-center gap-2">
-                        <input type="checkbox" checked={challenge} onChange={() => setChallenge(!challenge)} />
-                        Challenge
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <input type="checkbox" checked={allPlayers} onChange={() => setAllPlayers(!allPlayers)} />
-                        All Players
-                    </label>
+                <div className="flex flex-col gap-2.5 mb-5">
+                    {[
+                        { label: 'Dirty (18+)', checked: dirty, onChange: () => setDirty(!dirty) },
+                        { label: 'Challenge (physical dare)', checked: challenge, onChange: () => setChallenge(!challenge) },
+                        { label: 'All Players (bonus round)', checked: allPlayers, onChange: () => setAllPlayers(!allPlayers) },
+                        {
+                            label: 'Needs opposite-gender partner (single players only)',
+                            checked: needOppositeGender,
+                            onChange: () => setNeedOppositeGender(!needOppositeGender),
+                        },
+                    ].map((item) => (
+                        <label key={item.label} className="flex items-center gap-2.5 text-sm text-white/80 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={item.checked}
+                                onChange={item.onChange}
+                                className="w-4 h-4 accent-[#00E676] cursor-pointer"
+                            />
+                            {item.label}
+                        </label>
+                    ))}
                 </div>
 
-                <div className="flex flex-col gap-2 mb-4">
-                    <label className="font-semibold">⚡ Punishment</label>
-                    <input
-                        type="number"
-                        value={punishment}
-                        onChange={(e) => setPunishment(Number(e.target.value))}
-                        className="w-full p-2 rounded border"
-                        min={0}
-                        placeholder="Enter punishment ID"
-                    />
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div>
+                        <label className="block text-xs font-semibold text-white/50 mb-1.5">Punishment (sips)</label>
+                        <input
+                            type="number"
+                            value={punishment}
+                            onChange={(e) => setPunishment(Number(e.target.value))}
+                            className={inputClass}
+                            min={1}
+                            max={3}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-white/50 mb-1.5">Difficulty</label>
+                        <select
+                            value={difficulty}
+                            onChange={(e) => setDifficulty(Number(e.target.value))}
+                            className={inputClass}
+                        >
+                            <option value={1}>1 - Icebreaker</option>
+                            <option value={2}>2 - Personal</option>
+                            <option value={3}>3 - Bold</option>
+                            <option value={4}>4 - Extreme</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div className="flex flex-col gap-2 mb-6">
-                    <label className="font-semibold">🎚️ Difficulty</label>
-                    <select
-                        value={difficulty}
-                        onChange={(e) => setDifficulty(Number(e.target.value))}
-                        className="w-full p-2 rounded border"
+                <div className="flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-3 bg-white/10 hover:bg-white/15 text-white font-bold rounded-lg transition-colors cursor-pointer"
                     >
-                        <option value={1}>1</option>
-                        <option value={2}>2</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4</option>
-                        <option value={5}>5</option>
-                    </select>
-                </div>
-
-                <div className="flex justify-end gap-3">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                        disabled={saving}
+                        disabled={saving || !question.trim()}
+                        className="flex-1 py-3 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg shadow-lg transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {saving ? 'Saving...' : 'Save'}
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 }
