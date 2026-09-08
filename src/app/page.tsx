@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Drink, Gender, Player } from './types/player';
 import AddPlayerModal from './components/game/AddPlayerModal';
 import { supabase } from './lib/SupabaseClient';
@@ -31,6 +32,10 @@ export default function Home() {
   const handleModeContinue = () => {
     if (!selectedMode) return;
     setView(selectedMode.needsRoster ? 'setup' : 'quickOptions');
+  };
+
+  const handleBack = () => {
+    setView(view === 'gameOptions' ? 'setup' : 'modes');
   };
 
   const settings: SettingsLabel[] = [
@@ -139,9 +144,9 @@ export default function Home() {
         drink: p.drink,
         single: p.single
       },
-      skipCount: 1,
       totalQuestionsAnswered: 0,
       drankCount: 0,
+      answerStreak: 0,
     } as GamePlayer));
 
     initializedPlayers.push({
@@ -152,9 +157,9 @@ export default function Home() {
         drink: Drink.None,
         single: false,
       },
-      skipCount: 0,
       totalQuestionsAnswered: 0,
       drankCount: 0,
+      answerStreak: 0,
     } as GamePlayer);
 
     const gameState: GameState = {
@@ -213,9 +218,9 @@ export default function Home() {
       }
       const gamePlayer = {
         playerInfo: player,
-        skipCount: 1,
         totalQuestionsAnswered: 0,
         drankCount: 0,
+        answerStreak: 0,
       };
       const updatedPlayers = [...gameState.players, gamePlayer]
 
@@ -265,10 +270,16 @@ export default function Home() {
   };
 
   return (
-    <AdsLayout>
+    <AdsLayout lockPortrait>
       <main className="flex flex-col items-start sm:items-center h-full">
         <div className="w-full flex items-center justify-between px-6 mb-6">
-          <div className="hidden sm:block w-8" /> {/* Spacer to maintain centering */}
+          {view !== 'modes' ? (
+            <button onClick={handleBack} aria-label="Back" className="p-2 -ml-2 text-white hover:text-white/70 cursor-pointer">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          ) : (
+            <div className="hidden sm:block w-8" /> /* Spacer to maintain centering */
+          )}
           <div className="flex items-center gap-2">
             <Logo/>
             <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
@@ -298,7 +309,6 @@ export default function Home() {
             mode={selectedMode}
             spicy={gameSettings.adultMode}
             onToggleSpicy={() => toggleSetting('adultMode')}
-            onChangeMode={() => setView('modes')}
             onStart={() => {
               if (selectedMode.route) router.push(`${selectedMode.route}?spicy=${gameSettings.adultMode}`);
             }}
@@ -311,7 +321,6 @@ export default function Home() {
             players={players}
             onAdd={updatePlayers}
             onRemove={removePlayer}
-            onChangeMode={() => setView('modes')}
             onStart={() => {
               if (selectedMode.route) router.push(`${selectedMode.route}?spicy=${gameSettings.adultMode}`);
             }}
@@ -331,15 +340,12 @@ export default function Home() {
               setModalOpen(true);
             }}
             onRemove={removePlayer}
-            onChangeMode={() => setView('modes')}
             onContinue={() => setView('gameOptions')}
           />
         )}
 
         {view === 'gameOptions' && selectedMode && (
           <GameOptions
-            mode={selectedMode}
-            onBack={() => setView('setup')}
             onStart={startGame}
             settings={settings}
             gameSettings={gameSettings}

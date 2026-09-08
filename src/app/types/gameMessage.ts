@@ -12,7 +12,8 @@ export type GameMessageCategory =
   | 'stat_top_drinker'
   | 'stat_top_answerer'
   | 'stat_heavy_drinker'
-  | 'stat_heavy_answerer';
+  | 'stat_heavy_answerer'
+  | 'dry_streak';
 
 export type GameMessage = {
   id: number;

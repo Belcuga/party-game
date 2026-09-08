@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import Modal from './Modal';
 import FeedbackModal from './FeedbackModal';
+import SuggestQuestionModal from './SuggestQuestionModal';
 import Link from 'next/link';
 
 export default function SettingsMenu() {
   const [showMenu, setShowMenu] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   return (
     <div className="relative">
@@ -46,6 +48,15 @@ export default function SettingsMenu() {
           >
             <div className="text-white font-medium">Send Feedback</div>
           </div>
+          <div
+            className="px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
+            onClick={() => {
+              setSuggestOpen(true);
+              setShowMenu(false);
+            }}
+          >
+            <div className="text-white font-medium">Suggest a Question</div>
+          </div>
           <Link
             href="/policy-web"
             className="block px-4 py-2 hover:bg-[#3b1b5e] transition-colors duration-200 cursor-pointer"
@@ -78,6 +89,7 @@ export default function SettingsMenu() {
       </Modal>
 
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      <SuggestQuestionModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
     </div>
   );
 }

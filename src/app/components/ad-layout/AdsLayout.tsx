@@ -3,24 +3,34 @@
 import { useGame } from "@/app/providers/GameContext";
 import GlobalLoader from "../ui/GlobalLoader";
 import { useEffect, useState } from "react";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, MessageCircleQuestion } from "lucide-react";
 import FeedbackModal from "../ui/FeedbackModal";
+import SuggestQuestionModal from "../ui/SuggestQuestionModal";
 
-export default function AdsLayout({ children }: { children: React.ReactNode }) {
+type Props = {
+  children: React.ReactNode;
+  /** Mode-select and player setup aren't laid out for a short landscape viewport (labels
+   *  overlap), so those screens force portrait. Once a mode actually starts, its own page
+   *  doesn't pass this and landscape is allowed. */
+  lockPortrait?: boolean;
+};
+
+export default function AdsLayout({ children, lockPortrait = false }: Props) {
   const { loading } = useGame();
-  const [isLandscape, setIsLandscape] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
+    if (!lockPortrait) return;
+
     const handleOrientation = () => {
       const isNowLandscape = window.matchMedia("(orientation: landscape)").matches;
-      const isMobile = window.innerHeight <= 440;
+      const isMobile = window.innerWidth < 1024;
       setIsLandscape(isNowLandscape && isMobile);
-      
-      console.log(isLandscape);
     };
 
-    handleOrientation(); // Initial check
+    handleOrientation();
     window.addEventListener("resize", handleOrientation);
     window.addEventListener("orientationchange", handleOrientation);
 
@@ -28,14 +38,15 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
       window.removeEventListener("resize", handleOrientation);
       window.removeEventListener("orientationchange", handleOrientation);
     };
-  }, []);
+  }, [lockPortrait]);
 
   return (
 
     <div className="relative min-h-screen bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] text-white flex justify-center overflow-hidden">
-            {isLandscape && (
-        <div className="fixed inset-0 bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] bg-opacity-90 text-white text-2xl flex items-center justify-center z-50">
-          Please rotate your device back to portrait mode.
+      {lockPortrait && isLandscape && (
+        <div className="fixed inset-0 z-50 bg-gradient-to-br from-[#1a0142] via-[#2a064e] to-[#4b0c5e] text-white text-xl text-center px-8 flex flex-col items-center justify-center gap-3">
+          <span className="text-4xl">📱</span>
+          Rotate back to portrait to pick a mode and add players.
         </div>
       )}
       {/* Ads and dark background: only on lg+ - hidden for now, keep markup for when ads go live */}
@@ -68,8 +79,15 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Feedback button: only on lg+, bottom-right corner (mobile gets it via the Settings menu). */}
-      <div className="hidden lg:flex fixed right-4 bottom-4 z-10">
+      {/* Feedback + suggestion buttons: only on lg+, bottom-right corner (mobile gets them via the Settings menu). */}
+      <div className="hidden lg:flex fixed right-4 bottom-4 z-10 flex-row items-center gap-3">
+        <button
+          onClick={() => setSuggestOpen(true)}
+          className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#1b003c] border border-[#ffffff20] shadow-[0_0_20px_rgba(157,23,77,0.25)] hover:bg-[#3b1b5e] transition-colors cursor-pointer text-white font-semibold text-sm"
+        >
+          <MessageCircleQuestion className="w-4 h-4" />
+          Suggest a Question
+        </button>
         <button
           onClick={() => setFeedbackOpen(true)}
           className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#1b003c] border border-[#ffffff20] shadow-[0_0_20px_rgba(157,23,77,0.25)] hover:bg-[#3b1b5e] transition-colors cursor-pointer text-white font-semibold text-sm"
@@ -79,6 +97,7 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
         </button>
       </div>
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      <SuggestQuestionModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
 
       {/* Main content box: lg+ version with wrapper */}
       <div className="hidden lg:flex w-full justify-center px-[88px] py-6">
@@ -88,9 +107,10 @@ export default function AdsLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Mobile view - direct content with background */}
-      <div className="lg:hidden w-full h-screen flex justify-center items-center overflow-hidden">
-        <div className="backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full h-full overflow-hidden">
+      {/* Mobile view - direct content with background. Fixed to the viewport height so it also
+          works in landscape; the inner panel scrolls instead of clipping when content runs tall. */}
+      <div className="lg:hidden w-full h-[100dvh] flex justify-center items-center overflow-hidden">
+        <div className="backdrop-blur-sm border border-[#ffffff10] sm:rounded-[24px] shadow-inner p-4 w-full h-full overflow-y-auto" style={{ paddingLeft: 'max(1rem, env(safe-area-inset-left))', paddingRight: 'max(1rem, env(safe-area-inset-right))' }}>
           {loading && <GlobalLoader />}
           {!loading && <>{children}</>}
         </div>

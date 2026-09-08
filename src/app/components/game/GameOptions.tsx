@@ -1,25 +1,14 @@
 'use client';
 
-import { ArrowLeft, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import Button from '../ui/Button';
 import Switch from '../ui/Switch';
-import type { GameModeId } from './ModeSelect';
-import type { LucideIcon } from 'lucide-react';
 import { SettingsLabel } from '../../types/gameSettings';
 import { DRUNKENNESS_LEVELS } from '../../types/drunkenness';
-
-type Mode = {
-  id: GameModeId;
-  name: string;
-  color: string;
-  icon: LucideIcon;
-};
 
 type GameSettingsState = { adultMode: boolean; challenges: boolean; dirtyMode: boolean; punishmentRoulette: boolean };
 
 type Props = {
-  mode: Mode;
-  onBack: () => void;
   onStart: () => void;
   settings: SettingsLabel[];
   gameSettings: GameSettingsState;
@@ -29,8 +18,6 @@ type Props = {
 };
 
 export default function GameOptions({
-  mode,
-  onBack,
   onStart,
   settings,
   gameSettings,
@@ -38,26 +25,8 @@ export default function GameOptions({
   drunkenness,
   onSetDrunkenness,
 }: Props) {
-  const Icon = mode.icon;
-
   return (
     <div className="w-full max-w-md flex-1 overflow-y-auto px-4 flex flex-col">
-      <div className="flex items-center justify-between flex-shrink-0 mb-2">
-        <button onClick={onBack} aria-label="Back to players" className="p-2 -ml-2 text-white hover:text-white/70 cursor-pointer">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center border bg-white/5"
-            style={{ borderColor: mode.color }}
-          >
-            <Icon className="w-4 h-4" style={{ color: mode.color }} strokeWidth={1.8} />
-          </div>
-          <span className="text-sm font-bold">{mode.name}</span>
-        </div>
-        <div className="w-9" />
-      </div>
-
       <div className="flex-1 min-h-0 flex flex-col justify-center gap-8">
         <div>
           <div className="font-bold mb-1 text-center text-white text-xl">How drunk is everyone?</div>

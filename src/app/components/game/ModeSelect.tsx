@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Hand, Users, Shield, Timer, Skull, Check, LucideIcon } from 'lucide-react';
+import { Layers, Hand, Users, Shield, Timer, Skull, HeartHandshake, MessageCircleHeart, Check, LucideIcon } from 'lucide-react';
 import clsx from 'clsx';
 import Button from '../ui/Button';
 
@@ -10,7 +10,9 @@ export type GameModeId =
   | 'mostlikely'
   | 'truthdare'
   | 'category'
-  | 'wasted';
+  | 'wasted'
+  | 'wingman'
+  | 'bonding';
 
 export type Mode = {
   id: GameModeId;
@@ -30,6 +32,9 @@ export type Mode = {
   rosterFields?: 'full' | 'name-only';
   /** True for modes whose design/build hasn't happened yet - shown greyed out and unselectable. */
   comingSoon?: boolean;
+  /** True to pull this mode out of the mode-select and how-to-play lists without deleting its
+   *  data/route - a way to take a mode offline temporarily. */
+  hidden?: boolean;
 };
 
 export const GAME_MODES: Mode[] = [
@@ -95,6 +100,31 @@ export const GAME_MODES: Mode[] = [
     rosterFields: 'name-only',
     howToPlay: "Each turn, everyone gets a prompt - some are solo, some tell you to pick someone else at the table. Either way, drinking isn't optional here. No answering out of it.",
     route: '/game/wasted',
+    hidden: true,
+  },
+  {
+    id: 'wingman',
+    name: 'Wingman',
+    tagline: 'Play matchmaker - or get matched yourself.',
+    color: '#f472b6',
+    icon: HeartHandshake,
+    needsRoster: true,
+    rosterFields: 'name-only',
+    howToPlay: "Each turn, everyone gets a prompt. Sometimes you'll pair up two other players, sometimes the app pairs you with someone, and sometimes you pick who you're paired with. Not feeling it? Take a sip instead - no pressure.",
+    route: '/game/wingman',
+    hidden: true,
+  },
+  {
+    id: 'bonding',
+    name: 'Bonding',
+    tagline: 'Slow down and actually get to know each other.',
+    color: '#818cf8',
+    icon: MessageCircleHeart,
+    needsRoster: true,
+    rosterFields: 'name-only',
+    howToPlay: "Each round, someone gets asked a question - usually the app picks fairly who asks who, but sometimes you'll get to choose. Some questions are personal, some ask what you think about someone else at the table. Don't want to answer? Take a sip instead.",
+    route: '/game/bonding',
+    hidden: true,
   },
 ];
 
@@ -103,20 +133,6 @@ type Props = {
   onSelect: (id: GameModeId) => void;
   onContinue: () => void;
 };
-
-export function ModeChip({ mode, onClick }: { mode: Mode; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="inline-flex items-center gap-2 mt-2 px-3 py-1 rounded-full bg-white/10 border cursor-pointer"
-      style={{ borderColor: mode.color }}
-    >
-      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: mode.color }} />
-      <span className="text-xs font-semibold">{mode.name}</span>
-      <span className="text-xs text-white/50">Change</span>
-    </button>
-  );
-}
 
 export default function ModeSelect({ selectedModeId, onSelect, onContinue }: Props) {
   return (
@@ -128,7 +144,7 @@ export default function ModeSelect({ selectedModeId, onSelect, onContinue }: Pro
 
       <div className="flex-1 min-h-0 flex flex-col justify-center">
       <ul className="space-y-2">
-        {GAME_MODES.map((mode) => {
+        {GAME_MODES.filter((mode) => !mode.hidden).map((mode) => {
           const selected = selectedModeId === mode.id;
           const Icon = mode.icon;
           return (

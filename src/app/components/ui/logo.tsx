@@ -1,8 +1,12 @@
 import React from 'react';
 
-const Logo: React.FC = () => {
+type LogoProps = {
+    className?: string;
+};
+
+const Logo: React.FC<LogoProps> = ({ className = 'w-16 h-16' }) => {
     return (
-        <div className="w-16 h-16">
+        <div className={className}>
             {/* Inline SVG with neon glow */}
             <svg
                 version="1.1"

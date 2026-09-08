@@ -52,6 +52,12 @@ export const localGameMessages: GameMessage[] = [
   { id: nextId(), created_at: now(), category: 'stat_heavy_answerer', text: '{name} is way too good at this game.' },
   { id: nextId(), created_at: now(), category: 'stat_heavy_answerer', text: '{count} honest answers from {name}. Impressive.' },
   { id: nextId(), created_at: now(), category: 'stat_heavy_answerer', text: "{name} is barely drinking tonight." },
+
+  // Classic Trials - "hasn't drank in a while" reminder before their turn
+  { id: nextId(), created_at: now(), category: 'dry_streak', text: "{name}, you haven't taken a sip in a while - take one now." },
+  { id: nextId(), created_at: now(), category: 'dry_streak', text: '{name} has answered {count} in a row without drinking. Fix that.' },
+  { id: nextId(), created_at: now(), category: 'dry_streak', text: "Suspiciously sober, {name}. Take a sip before this round starts." },
+  { id: nextId(), created_at: now(), category: 'dry_streak', text: "{name}'s answer streak is impressive - but it's time for a sip." },
 ];
 
 export function nextGameMessageId(): number {

@@ -10,12 +10,18 @@ import { CategoryPrompt } from '../types/categoryPrompt';
 import { localCategoryPrompts } from './localCategoryStore';
 import { Feedback } from '../types/feedback';
 import { localFeedback } from './localFeedbackStore';
+import { QuestionSuggestion } from '../types/questionSuggestion';
+import { localQuestionSuggestions } from './localQuestionSuggestionsStore';
 import { RouletteEffect } from '../types/rouletteEffect';
 import { localRouletteEffects } from './localRouletteEffectsStore';
 import { GameMessage } from '../types/gameMessage';
 import { localGameMessages } from './localGameMessagesStore';
 import { WastedPrompt } from '../types/wastedPrompt';
 import { localWastedPrompts } from './localWastedPromptsStore';
+import { WingmanPrompt } from '../types/wingmanPrompt';
+import { localWingmanPrompts } from './localWingmanPromptsStore';
+import { BondingQuestion } from '../types/bondingQuestion';
+import { localBondingQuestions } from './localBondingQuestionsStore';
 
 // Persists each mock table to localStorage so admin edits and user feedback survive a
 // page refresh on the same browser (there's no real backend behind this local mock).
@@ -278,9 +284,12 @@ const MockMostLikelyQuery = createSimpleMockQuery<MostLikelyStatement>(localMost
 const MockTruthDareQuery = createSimpleMockQuery<TruthDarePrompt>(localTruthDarePrompts, 'truth_dare_prompts');
 const MockCategoryQuery = createSimpleMockQuery<CategoryPrompt>(localCategoryPrompts, 'category_prompts');
 const MockFeedbackQuery = createSimpleMockQuery<Feedback>(localFeedback, 'feedback');
+const MockQuestionSuggestionQuery = createSimpleMockQuery<QuestionSuggestion>(localQuestionSuggestions, 'question_suggestions');
 const MockRouletteEffectQuery = createSimpleMockQuery<RouletteEffect>(localRouletteEffects, 'roulette_effects');
 const MockGameMessageQuery = createSimpleMockQuery<GameMessage>(localGameMessages, 'game_messages');
 const MockWastedPromptQuery = createSimpleMockQuery<WastedPrompt>(localWastedPrompts, 'wasted_prompts');
+const MockWingmanPromptQuery = createSimpleMockQuery<WingmanPrompt>(localWingmanPrompts, 'wingman_prompts');
+const MockBondingQuestionQuery = createSimpleMockQuery<BondingQuestion>(localBondingQuestions, 'bonding_questions');
 
 export const localSupabase = {
   from(table: string) {
@@ -290,9 +299,12 @@ export const localSupabase = {
     if (table === 'truth_dare_prompts') return new MockTruthDareQuery();
     if (table === 'category_prompts') return new MockCategoryQuery();
     if (table === 'feedback') return new MockFeedbackQuery();
+    if (table === 'question_suggestions') return new MockQuestionSuggestionQuery();
     if (table === 'roulette_effects') return new MockRouletteEffectQuery();
     if (table === 'game_messages') return new MockGameMessageQuery();
     if (table === 'wasted_prompts') return new MockWastedPromptQuery();
+    if (table === 'wingman_prompts') return new MockWingmanPromptQuery();
+    if (table === 'bonding_questions') return new MockBondingQuestionQuery();
     throw new Error(`Local Supabase mock does not support table "${table}"`);
   },
 };

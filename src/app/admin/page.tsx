@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Layers, Hand, Users, Shield, Timer, MessageSquare, Dices, Sparkles, Skull, ChevronRight, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Layers, Hand, Users, Shield, Timer, MessageSquare, MessageCircleQuestion, Dices, Sparkles, Skull, HeartHandshake, MessageCircleHeart, ChevronRight, type LucideIcon } from 'lucide-react';
 import { supabase } from '@/app/lib/SupabaseClient';
 import Logo from '@/app/components/ui/logo';
 import Button from '@/app/components/ui/Button';
@@ -25,7 +25,10 @@ const SECTIONS: Section[] = [
     { id: 'truthdare', name: 'Truth or Dare', description: 'Truths and dares', color: '#ffb703', icon: Shield, href: '/admin/truthdare', table: 'truth_dare_prompts', unit: 'prompts' },
     { id: 'category', name: 'Category Countdown', description: 'Categories', color: '#2dd4bf', icon: Timer, href: '/admin/category', table: 'category_prompts', unit: 'categories' },
     { id: 'wasted', name: 'Get Wasted', description: 'Drinking prompts', color: '#ef4444', icon: Skull, href: '/admin/wasted', table: 'wasted_prompts', unit: 'prompts' },
+    { id: 'wingman', name: 'Wingman', description: 'Matchmaking prompts', color: '#f472b6', icon: HeartHandshake, href: '/admin/wingman', table: 'wingman_prompts', unit: 'prompts' },
+    { id: 'bonding', name: 'Bonding', description: 'Personal questions', color: '#818cf8', icon: MessageCircleHeart, href: '/admin/bonding', table: 'bonding_questions', unit: 'questions' },
     { id: 'feedback', name: 'User Feedback', description: 'Bug reports and suggestions', color: '#fb7185', icon: MessageSquare, href: '/admin/feedback', table: 'feedback', unit: 'submissions' },
+    { id: 'question-suggestions', name: 'Question Suggestions', description: 'User-submitted question ideas', color: '#00E676', icon: MessageCircleQuestion, href: '/admin/question-suggestions', table: 'question_suggestions', unit: 'suggestions' },
     { id: 'roulette', name: 'Punishment Roulette', description: 'Roulette rules', color: '#f97316', icon: Dices, href: '/admin/roulette', table: 'roulette_effects', unit: 'rules' },
     { id: 'messages', name: 'Fun Popup Messages', description: 'Milestones, difficulty, stat popups', color: '#38bdf8', icon: Sparkles, href: '/admin/messages', table: 'game_messages', unit: 'messages' },
 ];

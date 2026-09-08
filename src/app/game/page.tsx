@@ -23,6 +23,7 @@ const ROULETTE_COOLDOWN_ROUNDS = 3;
 const ROULETTE_CHANCE = 0.3;
 const ROULETTE_SPIN_TICKS = 10;
 const ROULETTE_SPIN_INTERVAL_MS = 120;
+const DRY_STREAK_THRESHOLD = 4;
 
 export default function PlayPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function PlayPage() {
   const [heatPopupOpen, setHeatPopupOpen] = useState(false);
   const [statPopup, setStatPopup] = useState<{ type: GameMessageCategory; message: string } | null>(null);
   const lastStatPopupRoundRef = useRef<Record<string, number>>({});
+  const [dryStreakPopup, setDryStreakPopup] = useState<string | null>(null);
 
   const [roulettePhase, setRoulettePhase] = useState<'idle' | 'spinning' | 'result'>('idle');
   const [rouletteEffect, setRouletteEffect] = useState<RouletteEffect | null>(null);
@@ -88,7 +90,7 @@ export default function PlayPage() {
         currentPlayerId: nextPlayerId,
         currentQuestion: nextQuestion,
       });
-      maybeTriggerRoulette(nextPlayerId);
+      if (!maybeTriggerRoulette(nextPlayerId)) maybeTriggerDryStreak(nextPlayerId);
     }
     setLoading(false);
   }, [gameState]);
@@ -271,16 +273,18 @@ export default function PlayPage() {
     return null;
   }
 
-  /** Rolled for whoever is about to come up next, before their question is revealed. */
-  function maybeTriggerRoulette(nextPlayerId: string) {
-    if (!gameState || !gameState.punishmentRouletteEnabled) return;
-    if (nextPlayerId === '0') return;
-    if (rouletteEffectsPool.length === 0) return;
+  /** Rolled for whoever is about to come up next, before their question is revealed.
+   *  Returns whether it actually triggered, so callers can skip the dry-streak reminder
+   *  when the roulette popup already claimed this player's pre-turn moment. */
+  function maybeTriggerRoulette(nextPlayerId: string): boolean {
+    if (!gameState || !gameState.punishmentRouletteEnabled) return false;
+    if (nextPlayerId === '0') return false;
+    if (rouletteEffectsPool.length === 0) return false;
 
     const lastRound = lastRouletteRoundRef.current[nextPlayerId];
     const offCooldown = lastRound === undefined || gameState.roundNumber - lastRound > ROULETTE_COOLDOWN_ROUNDS;
-    if (!offCooldown) return;
-    if (Math.random() >= ROULETTE_CHANCE) return;
+    if (!offCooldown) return false;
+    if (Math.random() >= ROULETTE_CHANCE) return false;
 
     lastRouletteRoundRef.current[nextPlayerId] = gameState.roundNumber;
 
@@ -301,6 +305,8 @@ export default function PlayPage() {
         setRouletteSpinIndex(Math.floor(Math.random() * rouletteEffectsPool.length));
       }
     }, ROULETTE_SPIN_INTERVAL_MS);
+
+    return true;
   }
 
   function dismissRoulette() {
@@ -309,13 +315,39 @@ export default function PlayPage() {
     setRouletteWinnerId(null);
   }
 
+  /** Checked for whoever is about to come up next, right after a roulette spin didn't
+   *  already claim their pre-turn moment. Fires once their answer streak (rounds in a
+   *  row where they answered instead of drinking) crosses the threshold, then resets it. */
+  function maybeTriggerDryStreak(nextPlayerId: string) {
+    if (!gameState) return;
+    if (nextPlayerId === '0') return;
+    if (gameMessagesPool.length === 0) return;
+
+    const player = gameState.players.find(p => p.playerInfo.id === nextPlayerId);
+    if (!player || player.answerStreak < DRY_STREAK_THRESHOLD) return;
+
+    const message = pickMessage(gameMessagesPool, 'dry_streak', {
+      name: player.playerInfo.name,
+      count: String(player.answerStreak),
+    });
+    if (!message) return;
+
+    setDryStreakPopup(message);
+    player.answerStreak = 0;
+  }
+
   function recordTurnChoice(choice: 'answered' | 'drank') {
     if (!gameState || !gameState.currentPlayerId) return;
 
     const actor = gameState.players.find(p => p.playerInfo.id === gameState.currentPlayerId);
     if (actor && actor.playerInfo.id !== '0') {
-      if (choice === 'answered') actor.totalQuestionsAnswered += 1;
-      else actor.drankCount += 1;
+      if (choice === 'answered') {
+        actor.totalQuestionsAnswered += 1;
+        actor.answerStreak += 1;
+      } else {
+        actor.drankCount += 1;
+        actor.answerStreak = 0;
+      }
 
       const lastPopupRound = lastStatPopupRoundRef.current[actor.playerInfo.id];
       const offCooldown = lastPopupRound === undefined || gameState.roundNumber - lastPopupRound > STAT_POPUP_COOLDOWN_ROUNDS;
@@ -357,7 +389,7 @@ export default function PlayPage() {
         currentPlayerId: nextPlayerId,
         currentQuestion: nextQuestion,
       });
-      maybeTriggerRoulette(nextPlayerId);
+      if (!maybeTriggerRoulette(nextPlayerId)) maybeTriggerDryStreak(nextPlayerId);
 
       setVotedType(null);
       return;
@@ -366,11 +398,6 @@ export default function PlayPage() {
     // If players finished and bonus was done -> start new round
     const newRoundPlayers = gameState.players.map(p => p.playerInfo.id);
     updatedRoundNumber += 1;
-
-    // Give extra skip every 10 rounds
-    if (updatedRoundNumber % 10 === 1 && updatedRoundNumber !== 1) {
-      gameState.players.forEach(player => player.skipCount++);
-    }
 
     // The whole table climbs together: automatically every 5 rounds, or immediately
     // (well, at this next-round boundary) if someone requested it with the Heat button.
@@ -406,7 +433,7 @@ export default function PlayPage() {
       tableDifficultyIndex: updatedTableDifficultyIndex,
       pendingDifficultyBoost: false,
     });
-    maybeTriggerRoulette(nextPlayerId);
+    if (!maybeTriggerRoulette(nextPlayerId)) maybeTriggerDryStreak(nextPlayerId);
 
     setVotedType(null);
   }
@@ -468,83 +495,64 @@ export default function PlayPage() {
     }
   }
 
-  function handleSkip() {
-    if (!gameState) return;
-
-    const currentPlayerId = gameState.currentPlayerId;
-    const currentQuestion = gameState.currentQuestion;
-
-    if (!currentPlayerId || !currentQuestion) return;
-
-    const playerIndex = gameState.players.findIndex(p => p.playerInfo.id === currentPlayerId);
-    if (playerIndex === -1) return;
-
-    const player = gameState.players[playerIndex];
-
-    const otherPlayers = gameState.players.filter(
-      p => p.playerInfo.id !== player.playerInfo.id &&
-        p.playerInfo.gender !== player.playerInfo.gender &&
-        p.playerInfo.single &&
-        p.playerInfo.id !== '0'
-    );
-
-    // ✅ Find another question with SAME difficulty (not answered + not current)
-    const availableQuestions = gameState.questions.filter(
-      (q) => {
-        const matchCount = (q.question.match(/\$\{player\}/g) || []).length;
-        const requiredPartners = Math.max(matchCount, q.need_opposite_gender ? 1 : 0);
-        return q.difficulty === currentQuestion.difficulty &&
-          !gameState.answeredQuestionIds.includes(q.id) &&
-          q.id !== currentQuestion.id &&
-          !q.all_players &&
-          requiredPartners <= otherPlayers.length &&
-          (!q.need_opposite_gender || player.playerInfo.single);
-      }
-    );
-
-    if (availableQuestions.length === 0) {
-      console.warn('No more questions available for this difficulty.');
-      return;
-    }
-
-    // 🔀 Pick a random new question
-    const newQuestion =
-      availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-
-    // ✅ Reduce skip count for the player (minimum 0)
-    const updatedPlayers = [...gameState.players];
-    updatedPlayers[playerIndex] = {
-      ...player,
-      skipCount: Math.max(0, player.skipCount - 1),
-    };
-
-    // ✅ Update game state with new question + updated skip count
-    setGameState({
-      ...gameState,
-      players: updatedPlayers,
-      currentQuestion: newQuestion,
-    });
-
-    setVotedType(null); // Reset like/dislike highlight
-  }
-
   return (
     <AdsLayout>
-      <main className="flex flex-col items-center h-full">
-        <div className="w-full flex items-center justify-between px-6 mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
-          >
-            <ArrowLeft />
-          </button>
+      <main className="flex flex-col items-center h-full max-lg:landscape:relative">
+        <div className="w-full flex items-center justify-between px-6 mb-6 max-lg:landscape:mb-0.5 flex-shrink-0 max-lg:landscape:gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 hover:text-gray-300 cursor-pointer"
+            >
+              <ArrowLeft />
+            </button>
 
-          <div className="flex items-center gap-2">
+            {/* Landscape: logo + title join the back button on the left. */}
+            <div className="hidden max-lg:landscape:flex items-center gap-2">
+              <Logo className="w-14 h-14" />
+              <h1 className="text-2xl font-extrabold drop-shadow-lg whitespace-nowrap">Tipsy Trials</h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 max-lg:landscape:hidden">
             <Logo/>
             <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 max-lg:landscape:gap-2">
+            {/* Round/level sits just left of the heat control in landscape. */}
+            <div className="hidden max-lg:landscape:flex items-center gap-1.5 text-[11px] font-semibold text-white/70 whitespace-nowrap">
+              <span>Round {gameState.roundNumber}</span>
+              <span className="w-1 h-1 rounded-full bg-white/30" />
+              <span style={{ color: '#00E676' }}>
+                Level {gameState.tableDifficultyIndex + 1} of {gameState.existingDifficulties.length}
+              </span>
+            </div>
+
+            {/* Heat control: icon-only in landscape, same header row. */}
+            {gameState.tableDifficultyIndex < gameState.existingDifficulties.length - 1 && (
+              gameState.pendingDifficultyBoost ? (
+                <span
+                  className="hidden max-lg:landscape:flex w-7 h-7 rounded-full items-center justify-center bg-red-500/10 border border-red-500/25 flex-shrink-0"
+                  title={heatMessage ?? 'Queued for next round.'}
+                >
+                  <Flame className="w-3.5 h-3.5 text-red-400" fill="currentColor" />
+                </span>
+              ) : (
+                <button
+                  onClick={handleRequestHeat}
+                  style={{
+                    background: 'linear-gradient(135deg, #ff5b3d, #e60049)',
+                    animation: 'heatPulse 2.2s ease-in-out infinite',
+                  }}
+                  className="hidden max-lg:landscape:flex w-7 h-7 rounded-full items-center justify-center text-white cursor-pointer flex-shrink-0"
+                  aria-label="Turn Up The Heat"
+                  title="Turn Up The Heat"
+                >
+                  <Flame className="w-3.5 h-3.5" fill="currentColor" />
+                </button>
+              )
+            )}
             <HowToPlayButton
               modeName="Classic Trials"
               color="#00E676"
@@ -554,8 +562,11 @@ export default function PlayPage() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-2 flex-1 min-h-0">
-          <div className="flex-shrink-0 pt-2 flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center text-center w-full max-w-2xl mx-auto h-full px-4 py-2 flex-1 min-h-0 max-lg:landscape:max-w-xl max-lg:landscape:py-0">
+          {/* Round/level + heat: top-anchored, own row - portrait only (landscape keeps this in
+              the header). Kept out of the centered block below so it doesn't eat into the room
+              that gives the turn/question their presence. */}
+          <div className="max-lg:landscape:hidden w-full flex-shrink-0 pt-1 pb-3 flex items-center justify-center flex-wrap gap-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10">
               <span className="text-xs font-semibold text-white/70">Round {gameState.roundNumber}</span>
               <span className="w-1 h-1 rounded-full bg-white/30" />
@@ -586,59 +597,75 @@ export default function PlayPage() {
             )}
           </div>
 
-          <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center gap-6">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center border-2 bg-white/5 flex-shrink-0"
-              style={{ borderColor: '#00E676', boxShadow: '0 0 28px #00E67655' }}
-            >
-              <Layers className="w-6 h-6" style={{ color: '#00E676' }} strokeWidth={1.7} />
+          <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center max-lg:landscape:justify-start gap-6 max-lg:landscape:gap-0 max-lg:landscape:overflow-visible overflow-y-auto">
+            {/* Icon + turn: in landscape this is pulled out of the flow entirely and laid over the
+                header row (position: absolute + z-index), instead of competing with it for space
+                below - the card block gets a matching top offset so it starts clear of this.
+                (overflow-y-auto is dropped for landscape specifically - an overflow:auto/hidden
+                ancestor clips absolutely-positioned descendants no matter their containing block,
+                so it would otherwise cancel the overlap; the outer AdsLayout panel still scrolls
+                the whole page as a fallback.) */}
+            <div className="flex flex-col items-center gap-4 max-lg:landscape:gap-0.5 flex-shrink-0 max-lg:landscape:absolute max-lg:landscape:top-1 max-lg:landscape:inset-x-0 max-lg:landscape:z-20 max-lg:landscape:pointer-events-none">
+              <div
+                className="w-20 h-20 max-lg:landscape:w-10 max-lg:landscape:h-10 rounded-full flex items-center justify-center border-2 bg-white/5 flex-shrink-0 shadow-[0_0_28px_#00E67655] max-lg:landscape:shadow-[0_0_10px_#00E67699,0_0_3px_#00E676cc]"
+                style={{ borderColor: '#00E676' }}
+              >
+                <Layers className="w-9 h-9 max-lg:landscape:w-4 max-lg:landscape:h-4" style={{ color: '#00E676' }} strokeWidth={1.7} />
+              </div>
+
+              <h2 className="text-2xl max-lg:landscape:text-2xl">
+                <b className="font-bold text-3xl max-lg:landscape:text-3xl" style={{ color: '#00E676' }}>{currentPlayer?.playerInfo.name}</b>
+                {`${currentPlayer?.playerInfo.id === '0' ? '\'' : '\'s'} Turn`}
+              </h2>
             </div>
 
-            <h2 className="text-xl">
-              <b className="font-bold text-2xl">{currentPlayer?.playerInfo.name}</b>
-              {`${currentPlayer?.playerInfo.id === '0' ? '\'' : '\'s'} Turn`}
-            </h2>
-
-            {/* Question */}
-            <div className="bg-white rounded-[28px] shadow-lg w-full overflow-hidden">
-              <div className="px-7 pt-7 pb-5">
-                <p className="text-[#1b003c] text-xl font-semibold leading-snug">{questionText}</p>
-              </div>
-              <div className="mx-5 mb-5 rounded-2xl px-5 py-3" style={{ backgroundColor: 'rgba(5,150,105,0.08)' }}>
-                <div className="space-y-1" style={{ color: '#047857' }}>{showNumberOfSips()}</div>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-8">
-              <button
-                onClick={() => handleVote('dislike')}
-                disabled={votedType !== null}
-                className={`w-11 h-11 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${votedType === 'dislike'
-                    ? 'bg-red-500 scale-110 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                    : 'bg-white/10 hover:bg-white/15'
-                  } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            {/* Card + vote buttons: takes whatever room is left under the overlapping icon+turn
+                group, and centers itself within it. max-lg:landscape:pt-16 clears the absolutely
+                positioned icon+turn block above so the card never renders underneath it. */}
+            <div className="w-full flex flex-col items-center justify-center gap-5 max-lg:landscape:flex-1 max-lg:landscape:min-h-0 max-lg:landscape:gap-2 max-lg:landscape:pt-16">
+              <div
+                className="rounded-[28px] max-lg:landscape:rounded-2xl shadow-lg w-full overflow-hidden max-lg:landscape:flex-shrink-0 border"
+                style={{ backgroundColor: '#3b1b5e', borderColor: '#00E67633', boxShadow: '0 0 32px #00E67622' }}
               >
-                <ThumbsDown className="w-4 h-4" />
-              </button>
+                <div className="px-7 pt-8 pb-5 max-lg:landscape:px-6 max-lg:landscape:pt-4 max-lg:landscape:pb-3">
+                  <p className="text-white text-2xl max-lg:landscape:text-2xl font-semibold leading-snug">{questionText}</p>
+                </div>
+                <div className="mx-6 mb-6 pt-4 max-lg:landscape:mx-4 max-lg:landscape:mb-3 max-lg:landscape:pt-2 border-t border-white/10">
+                  <div className="space-y-1 max-lg:landscape:text-sm" style={{ color: '#00E676' }}>{showNumberOfSips()}</div>
+                </div>
+              </div>
 
-              <button
-                onClick={() => handleVote('like')}
-                disabled={votedType !== null}
-                className={`w-11 h-11 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer ${votedType === 'like'
-                    ? 'bg-[#00E676] scale-110 shadow-[0_0_15px_rgba(0,230,118,0.5)]'
-                    : 'bg-white/10 hover:bg-white/15'
-                  } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <ThumbsUp className="w-4 h-4" />
-              </button>
+              <div className="flex justify-center gap-8 max-lg:landscape:gap-6">
+                <button
+                  onClick={() => handleVote('dislike')}
+                  disabled={votedType !== null}
+                  className={`w-11 h-11 max-lg:landscape:w-9 max-lg:landscape:h-9 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer border ${votedType === 'dislike'
+                      ? 'bg-red-500 border-red-500 text-white scale-110 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                      : 'bg-red-500/10 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-500/50'
+                    } ${votedType !== null && votedType !== 'dislike' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => handleVote('like')}
+                  disabled={votedType !== null}
+                  className={`w-11 h-11 max-lg:landscape:w-9 max-lg:landscape:h-9 rounded-full flex justify-center items-center transition-all duration-300 cursor-pointer border ${votedType === 'like'
+                      ? 'bg-[#00E676] border-[#00E676] text-white scale-110 shadow-[0_0_15px_rgba(0,230,118,0.5)]'
+                      : 'bg-[#00E676]/10 border-[#00E676]/30 text-[#00E676] hover:bg-[#00E676]/20 hover:border-[#00E676]/50'
+                    } ${votedType !== null && votedType !== 'like' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="w-full flex-shrink-0 pb-4 pt-2 flex flex-col items-center gap-3">
+          <div className="w-full flex-shrink-0 pb-4 pt-2 max-lg:landscape:pb-2 max-lg:landscape:pt-1 flex flex-col items-center gap-3 max-lg:landscape:gap-1.5">
             {currentPlayer?.playerInfo.id === '0' ? (
               <button
                 onClick={handleNext}
-                className="w-full py-4 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg transition-all duration-200 cursor-pointer"
+                className="w-full py-4 max-lg:landscape:py-2.5 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg transition-all duration-200 cursor-pointer"
               >
                 Next
               </button>
@@ -646,26 +673,17 @@ export default function PlayPage() {
               <div className="flex gap-3 w-full">
                 <button
                   onClick={() => recordTurnChoice('answered')}
-                  className="flex-1 py-4 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg transition-all duration-200 cursor-pointer"
+                  className="flex-1 py-4 max-lg:landscape:py-2.5 bg-gradient-to-r from-[#00E676] to-[#2196F3] hover:from-[#00E676]/90 hover:to-[#2196F3]/90 text-white font-bold rounded-lg transition-all duration-200 cursor-pointer"
                 >
                   I Answered
                 </button>
                 <button
                   onClick={() => recordTurnChoice('drank')}
-                  className="flex-1 py-4 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors duration-200 cursor-pointer"
+                  className="flex-1 py-4 max-lg:landscape:py-2.5 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold rounded-lg transition-colors duration-200 cursor-pointer"
                 >
                   I Took the Sip(s)
                 </button>
               </div>
-            )}
-
-            {(currentPlayer?.skipCount ?? 0) > 0 && currentPlayer?.playerInfo.id !== '0' && (
-              <button
-                onClick={handleSkip}
-                className="px-6 py-2 bg-[#3b1b5e] hover:bg-[#4e2a8e] text-white font-bold text-sm rounded-full transition-colors cursor-pointer duration-300"
-              >
-                Skip ({currentPlayer?.skipCount})
-              </button>
             )}
           </div>
         </div>
@@ -718,6 +736,27 @@ export default function PlayPage() {
                 Bring it on
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {dryStreakPopup && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-xs bg-[#1b003c] border border-[#ffffff15] rounded-3xl p-7 flex flex-col items-center text-center gap-4"
+            style={{ boxShadow: '0 0 40px rgba(255,183,3,0.18)' }}
+          >
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center border-2 bg-white/5"
+              style={{ borderColor: '#ffb703', boxShadow: '0 0 28px #ffb70366' }}
+            >
+              <Beer className="w-7 h-7" style={{ color: '#ffb703' }} strokeWidth={1.7} />
+            </div>
+            <p className="text-lg font-bold leading-snug">{dryStreakPopup}</p>
+            <Button onClick={() => setDryStreakPopup(null)} className="w-full mt-1">
+              Continue
+            </Button>
           </div>
         </div>
       )}

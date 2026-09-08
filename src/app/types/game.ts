@@ -3,9 +3,9 @@ import { Question } from "./question";
 
 export type GamePlayer = {
     playerInfo: Player;
-    skipCount: number;
     totalQuestionsAnswered: number; // times this player chose "I Answered" instead of drinking
     drankCount: number;             // times this player chose "I Took the Sip(s)" instead of answering
+    answerStreak: number;           // consecutive "I Answered" choices since their last drink; resets on drink or reminder
 };
 
 export type GameState = {

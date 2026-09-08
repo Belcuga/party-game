@@ -30,7 +30,7 @@ export default function HowToPlayPage() {
           </div>
 
           <ul className="space-y-2">
-            {GAME_MODES.map((mode) => {
+            {GAME_MODES.filter((mode) => !mode.hidden).map((mode) => {
               const Icon = mode.icon;
               return (
                 <li

@@ -2,18 +2,16 @@
 
 import Button from '../ui/Button';
 import Switch from '../ui/Switch';
-import { ModeChip } from './ModeSelect';
 import type { Mode } from './ModeSelect';
 
 type Props = {
   mode: Mode;
   spicy: boolean;
   onToggleSpicy: () => void;
-  onChangeMode: () => void;
   onStart: () => void;
 };
 
-export default function ModeLobby({ mode, spicy, onToggleSpicy, onChangeMode, onStart }: Props) {
+export default function ModeLobby({ mode, spicy, onToggleSpicy, onStart }: Props) {
   const Icon = mode.icon;
   const isBuilt = !!mode.route;
 
@@ -54,9 +52,6 @@ export default function ModeLobby({ mode, spicy, onToggleSpicy, onChangeMode, on
             We&apos;re building {mode.name} next - check back soon!
           </p>
         )}
-        <div className="text-center mt-4">
-          <ModeChip mode={mode} onClick={onChangeMode} />
-        </div>
       </div>
     </div>
   );

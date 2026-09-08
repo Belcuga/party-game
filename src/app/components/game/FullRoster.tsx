@@ -2,7 +2,6 @@
 
 import { TrashIcon, PencilIcon } from 'lucide-react';
 import Button from '../ui/Button';
-import { ModeChip } from './ModeSelect';
 import type { Mode } from './ModeSelect';
 import { Player, Gender, Drink } from '../../types/player';
 
@@ -12,7 +11,6 @@ type Props = {
   onAddClick: () => void;
   onEdit: (index: number) => void;
   onRemove: (index: number) => void;
-  onChangeMode: () => void;
   onContinue: () => void;
 };
 
@@ -27,7 +25,7 @@ export function isPlayerIncomplete(player: Player): boolean {
   return player.gender === Gender.None || player.drink === Drink.None || player.single === undefined;
 }
 
-export default function FullRoster({ mode, players, onAddClick, onEdit, onRemove, onChangeMode, onContinue }: Props) {
+export default function FullRoster({ mode, players, onAddClick, onEdit, onRemove, onContinue }: Props) {
   const Icon = mode.icon;
   const hasIncompletePlayers = players.some(isPlayerIncomplete);
   const canContinue = players.length >= 2 && !hasIncompletePlayers;
@@ -109,9 +107,6 @@ export default function FullRoster({ mode, players, onAddClick, onEdit, onRemove
             <p className="text-center text-xs text-red-400 mt-2">Some players are missing info - tap Edit to fill it in.</p>
           )
         )}
-        <div className="text-center mt-4">
-          <ModeChip mode={mode} onClick={onChangeMode} />
-        </div>
       </div>
     </div>
   );
