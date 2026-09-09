@@ -411,16 +411,6 @@ create policy "Public update" on truth_dare_prompts for update using (true) with
 create policy "Public delete" on truth_dare_prompts for delete using (true);
 
 insert into truth_dare_prompts (type, text, dirty, like_count, dislike_count) values
-('truth', 'What''s the most embarrassing thing in your search history?', false, 6, 0),
-('truth', 'What''s a lie you told that almost got you caught?', false, 5, 0),
-('truth', 'Who in this room would you trust with a secret?', false, 4, 0),
-('truth', 'What''s your most irrational fear?', false, 3, 0),
-('truth', 'What''s the pettiest reason you''ve ever been mad at someone?', false, 5, 0),
-('truth', 'What''s a rumor you''ve heard about yourself?', false, 4, 0),
-('truth', 'What''s the worst gift you''ve ever received?', false, 3, 0),
-('truth', 'Who was your worst kiss?', true, 7, 0),
-('truth', 'What''s the most attractive thing about the person to your right?', true, 6, 0),
-('truth', 'Have you ever had a crush on someone in this room?', true, 8, 1),
 ('dare', 'Do your best impression of someone in the room.', false, 6, 0),
 ('dare', 'Let the group post anything they want on your social media.', false, 5, 0),
 ('dare', 'Talk in an accent for the next 3 rounds.', false, 4, 0),
