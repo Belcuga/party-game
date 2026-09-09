@@ -297,6 +297,12 @@ export default function Home() {
         </div>
 
         {view === 'modes' && (
+          <p className="text-sm text-white/60 text-center max-w-xl mx-auto px-6 mt-1 mb-6">
+            Free party & drinking game for friends - no download needed. Pick a mode:<br />Classic Trials, Truth or Dare, Never Have I Ever and start in seconds.
+          </p>
+        )}
+
+        {view === 'modes' && (
           <ModeSelect
             selectedModeId={selectedModeId}
             onSelect={setSelectedModeId}

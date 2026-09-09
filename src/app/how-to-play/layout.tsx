@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'How to Play',
-  description: 'Learn the rules for every Tipsy Trials mode - Classic Trials, Never Have I Ever, Most Likely To, Truth or Dare, Category Countdown, Get Wasted, Wingman and Bonding.',
+  description: 'Drinking game rules for every Tipsy Trials mode - Classic Trials, Never Have I Ever, Most Likely To, Truth or Dare, Category Countdown, Get Wasted, Wingman and Bonding.',
   alternates: { canonical: '/how-to-play' },
   openGraph: {
     title: 'How to Play | Tipsy Trials',

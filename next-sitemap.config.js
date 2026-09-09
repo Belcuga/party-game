@@ -10,6 +10,7 @@ module.exports = {
   exclude: [
     '/admin',
     '/admin/*',
+    '/game',
     '/game/category',
     '/game/bonding',
     '/game/mostlikely',
@@ -30,7 +31,6 @@ module.exports = {
   transform: async (config, path) => {
     const priorityByPath = {
       '/': 1.0,
-      '/game': 0.9,
       '/how-to-play': 0.6,
       '/policy': 0.3,
       '/policy-web': 0.3,
