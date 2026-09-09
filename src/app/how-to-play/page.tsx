@@ -18,14 +18,14 @@ export default function HowToPlayPage() {
           </button>
           <div className="flex items-center gap-2">
             <Logo />
-            <h1 className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</h1>
+            <p className="text-2xl sm:text-4xl font-extrabold drop-shadow-lg">Tipsy Trials</p>
           </div>
           <div className="w-6" />
         </div>
 
         <div className="w-full max-w-md flex-1 min-h-0 overflow-y-auto px-4 pb-6">
           <div className="text-center mb-5">
-            <h2 className="text-xl font-semibold">How to Play</h2>
+            <h1 className="text-xl font-semibold">How to Play</h1>
             <p className="text-sm text-white/60 mt-1">A quick rundown of every mode.</p>
           </div>
 

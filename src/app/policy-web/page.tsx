@@ -24,7 +24,7 @@ export default function PolicyPage() {
                     </button>
                     <div className="flex items-center gap-3">
                         <Logo />
-                        <h1 className="text-3xl font-bold text-white">Tipsy Trials</h1>
+                        <p className="text-3xl font-bold text-white">Tipsy Trials</p>
                     </div>
                     <div className="w-8" /> {/* Spacer to maintain centering */}
                 </div>

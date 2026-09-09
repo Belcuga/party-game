@@ -1,6 +1,10 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api
+Disallow: /api/*
 
 # Host
 Host: https://tipsytrials.com

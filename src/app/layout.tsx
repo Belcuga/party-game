@@ -1,10 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GameProvider } from "./providers/GameContext";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: 'Tipsy Trials',
+  title: {
+    default: 'Tipsy Trials - The Ultimate Party Game',
+    template: '%s | Tipsy Trials',
+  },
   description: 'Get the party started with Tipsy Trials - a hilarious, chaotic drinking party game for friends.',
   keywords: ['party game', 'drinking game', 'friends', 'fun', 'questions', 'challenges', 'tipsy', 'trials'],
   icons: { icon: '/favicon.ico' },
@@ -25,9 +28,13 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   robots: { index: true, follow: true, nocache: false },
+  alternates: { canonical: '/' },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#0f172a',
-  alternates: { canonical: 'https://tipsytrials.com' },
-  other: { viewport: 'width=device-width, initial-scale=1' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,11 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "@type": "WebSite",
     "name": "Tipsy Trials",
     "url": "https://tipsytrials.com",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://tipsytrials.com/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
   };
 
   return (
@@ -71,9 +73,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         
-        <link rel="canonical" href="https://tipsytrials.com" />
-        <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="Get the party started with Tipsy Trials - a hilarious, chaotic drinking party game for friends." />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       </head>
       <body className="bg-gradient-to-br from-blue-950 to-blue-900 text-white">
