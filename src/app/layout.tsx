@@ -3,18 +3,24 @@ import "./globals.css";
 import { GameProvider } from "./providers/GameContext";
 import Script from "next/script";
 
+const HOME_TITLE = 'Tipsy Trials - Party & Drinking Game for Friends';
+const HOME_DESCRIPTION = 'Free party & drinking game for friends - no download needed. Choose from 8 modes: Truth or Dare, Never Have I Ever, Most Likely To & more. Start in seconds.';
+
 export const metadata: Metadata = {
   title: {
-    default: 'Tipsy Trials - The Ultimate Party Game',
+    default: HOME_TITLE,
     template: '%s | Tipsy Trials',
   },
-  description: 'Get the party started with Tipsy Trials - a hilarious, chaotic drinking party game for friends.',
-  keywords: ['party game', 'drinking game', 'friends', 'fun', 'questions', 'challenges', 'tipsy', 'trials'],
+  description: HOME_DESCRIPTION,
+  keywords: [
+    'party game', 'drinking game', 'party games for friends', 'drinking games for friends',
+    'truth or dare', 'never have i ever', 'most likely to', 'online party game', 'tipsy', 'trials',
+  ],
   icons: { icon: '/favicon.ico' },
   metadataBase: new URL('https://tipsytrials.com'),
   openGraph: {
-    title: 'Tipsy Trials',
-    description: 'Hilarious challenges. Ridiculous questions. The perfect way to get the party going.',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     url: 'https://tipsytrials.com',
     siteName: 'Tipsy Trials',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Tipsy Trials Game Banner' }],
@@ -23,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Tipsy Trials - The Ultimate Party Game',
-    description: 'Play the ultimate party game with your friends.',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     images: ['/og-image.png'],
   },
   robots: { index: true, follow: true, nocache: false },
