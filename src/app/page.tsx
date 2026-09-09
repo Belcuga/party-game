@@ -325,6 +325,8 @@ export default function Home() {
           <SimpleRoster
             mode={selectedMode}
             players={players}
+            spicy={gameSettings.adultMode}
+            onToggleSpicy={() => toggleSetting('adultMode')}
             onAdd={updatePlayers}
             onRemove={removePlayer}
             onStart={() => {

@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 import Button from '../ui/Button';
+import Switch from '../ui/Switch';
 import type { Mode } from './ModeSelect';
 import { Player, Gender, Drink } from '../../types/player';
 
 type Props = {
   mode: Mode;
   players: Player[];
+  spicy: boolean;
+  onToggleSpicy: () => void;
   onAdd: (player: Player) => void;
   onRemove: (index: number) => void;
   onStart: () => void;
@@ -17,7 +20,7 @@ type Props = {
 
 const AVATAR_COLORS = ['#00E676', '#ff6fd8', '#9156f3', '#ffb703', '#2dd4bf', '#fb7185', '#818cf8'];
 
-export default function SimpleRoster({ mode, players, onAdd, onRemove, onStart }: Props) {
+export default function SimpleRoster({ mode, players, spicy, onToggleSpicy, onAdd, onRemove, onStart }: Props) {
   const [name, setName] = useState('');
   const Icon = mode.icon;
 
@@ -107,6 +110,16 @@ export default function SimpleRoster({ mode, players, onAdd, onRemove, onStart }
                 })}
               </ul>
             )}
+          </div>
+        </div>
+
+        <div className="w-full max-w-xs flex-shrink-0">
+          <div className="flex items-center justify-between gap-3 bg-white/5 rounded-2xl px-4 py-3">
+            <div className="text-left">
+              <div className="text-sm font-semibold">Spicy content</div>
+              <div className="text-xs text-white/50 mt-0.5">Swaps in more explicit {mode.id === 'truthdare' ? 'truths and dares' : 'prompts'}.</div>
+            </div>
+            <Switch checked={spicy} onChange={onToggleSpicy} size="small" />
           </div>
         </div>
       </div>
