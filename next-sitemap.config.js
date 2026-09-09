@@ -26,7 +26,6 @@ module.exports = {
         disallow: ['/admin', '/admin/*', '/api', '/api/*'],
       },
     ],
-    additionalSitemaps: ['https://tipsytrials.com/sitemap.xml'],
   },
   transform: async (config, path) => {
     const priorityByPath = {
